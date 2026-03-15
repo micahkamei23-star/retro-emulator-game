@@ -43,6 +43,7 @@ class Controller {
     if (previous === 0) {
       this.setPressedVisual(control, true);
       this.emit(control, true, 'touch');
+    }
 
   emit(control, pressed, source) {
     if (this.state.get(control) === pressed) return;

@@ -220,6 +220,7 @@ function renderLibrary() {
   });
 }
 
+async function startRom(rom, romBuffer = null) {
 async function startRom(rom) {
   if (isLaunchingRom) return;
   isLaunchingRom = true;
@@ -233,6 +234,10 @@ async function startRom(rom) {
 
     activeCore = loaded.core;
     activeSystemLabel.textContent = `System: ${loaded.systemName}`;
+    activeCoreLabel.textContent = `Core: ${loaded.config.label}`;
+
+    const resolvedRomBuffer = romBuffer || StorageManager.dataURLToArrayBuffer(rom.data);
+    await activeCore.loadROM(resolvedRomBuffer);
   try {
     setStatus('Loading core...');
     const loaded = await loader.loadCore(rom.system);
@@ -288,6 +293,37 @@ romInput.addEventListener('change', async (event) => {
   const system = loader.resolveSystemByFilename(file.name);
   if (!system) {
     setStatus('Unsupported format');
+    romInput.value = '';
+    return;
+  }
+
+  setStatus('Reading ROM...');
+
+  try {
+    const romBuffer = await StorageManager.readFileAsArrayBuffer(file);
+    const romDataUrl = StorageManager.arrayBufferToDataURL(romBuffer, file.type || 'application/octet-stream');
+
+    const rom = {
+      id: `${file.name}-${file.size}-${file.lastModified}`,
+      name: file.name,
+      system,
+      systemLabel: EmulatorLoader.listSystems()[system].label,
+      size: file.size,
+      data: romDataUrl,
+      boxArt: '',
+      lastPlayed: new Date().toISOString(),
+      addedAt: new Date().toISOString(),
+    };
+
+    library = storage.upsertRom(rom);
+    renderLibrary();
+    await startRom(rom, romBuffer);
+  } catch (error) {
+    console.error(error);
+    setStatus(`Failed to read ${file.name}`);
+  } finally {
+    romInput.value = '';
+  }
     return;
   }
 

@@ -12,6 +12,28 @@ class StorageManager {
   }
 
 
+  static readFileAsArrayBuffer(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('Failed to read ROM file as ArrayBuffer.'));
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  static arrayBufferToDataURL(buffer, mimeType = 'application/octet-stream') {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    const chunkSize = 0x8000;
+
+    for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+      const chunk = bytes.subarray(offset, offset + chunkSize);
+      binary += String.fromCharCode(...chunk);
+    }
+
+    return `data:${mimeType};base64,${btoa(binary)}`;
+  }
+
   static dataURLToArrayBuffer(dataUrl) {
     const base64 = dataUrl.split(',')[1] || '';
     const binary = atob(base64);
