@@ -1,4 +1,4 @@
-const CACHE_NAME = 'retro-emulator-cache-v3';
+const CACHE_NAME = 'retro-emulator-cache-v4';
 const APP_SHELL = [
   './',
   './index.html',
@@ -8,11 +8,34 @@ const APP_SHELL = [
   './js/controller.js',
   './js/emulator-loader.js',
   './js/storage.js',
+  './js/emulators/core-interface.js',
+  './js/emulators/script-loader.js',
+  './js/emulators/nes-core.js',
+  './js/emulators/gb-core.js',
+  './js/emulators/wasm-core.js',
   './service-worker.js',
+  './cores/jsnes/jsnes.min.js',
+  './cores/gameboy/gameboy.min.js',
+  './cores/mgba/mgba.wasm',
+  './cores/snes9x/snes9x.wasm',
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    await Promise.allSettled(
+      APP_SHELL.map(async (asset) => {
+        try {
+          const response = await fetch(asset);
+          if (response.ok) {
+            await cache.put(asset, response);
+          }
+        } catch (_error) {
+          // Optional core asset may not be present during local development.
+        }
+      }),
+    );
+  })());
   self.skipWaiting();
 });
 

@@ -11,6 +11,17 @@ class StorageManager {
     });
   }
 
+
+  static dataURLToArrayBuffer(dataUrl) {
+    const base64 = dataUrl.split(',')[1] || '';
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes.buffer;
+  }
+
   getLibrary() {
     return JSON.parse(localStorage.getItem(ROM_LIBRARY_KEY) || '[]');
   }

@@ -12,14 +12,33 @@ const saveStateBtn = document.getElementById('saveStateBtn');
 const loadStateBtn = document.getElementById('loadStateBtn');
 const clearStateBtn = document.getElementById('clearStateBtn');
 
-const loader = new EmulatorLoader();
+const loader = new EmulatorLoader(canvas);
 const storage = new StorageManager();
-let library = storage.getLibrary();
+const controllerState = {};
+let library = storage.sortLibraryByRecentPlay(storage.getLibrary());
 let activeRom = null;
-const player = { x: 40, y: 40, speed: 4, color: '#00f5d4' };
+let activeCore = null;
+
+new Controller(({ control, pressed }) => {
+  controllerState[control] = pressed;
+  if (activeCore) {
+    activeCore.setInput(controllerState);
+  }
+});
 
 function setStatus(message) {
   activeRomLabel.textContent = `ROM: ${message}`;
+}
+
+function drawBootScreen(message = 'Upload a ROM to start') {
+  ctx.fillStyle = '#090909';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#00f5d4';
+  ctx.font = '20px monospace';
+  ctx.fillText('RETRO EMULATOR', 20, 40);
+  ctx.fillStyle = '#f15bb5';
+  ctx.font = '16px monospace';
+  ctx.fillText(message, 20, 72);
 }
 
 function createLibraryButton(label, action, romId) {
@@ -29,35 +48,6 @@ function createLibraryButton(label, action, romId) {
   button.dataset.action = action;
   button.dataset.id = romId;
   return button;
-}
-
-new Controller(({ control, pressed }) => {
-  if (!pressed) return;
-  if (control === 'left') player.x -= player.speed;
-  if (control === 'right') player.x += player.speed;
-  if (control === 'up') player.y -= player.speed;
-  if (control === 'down') player.y += player.speed;
-  player.x = Math.max(0, Math.min(canvas.width - 32, player.x));
-  player.y = Math.max(0, Math.min(canvas.height - 32, player.y));
-  renderFrame();
-});
-
-function renderFrame() {
-  ctx.fillStyle = '#090909';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#271849';
-  for (let i = 0; i < canvas.width; i += 32) {
-    for (let j = 0; j < canvas.height; j += 32) {
-      if ((i + j) % 64 === 0) ctx.fillRect(i, j, 32, 32);
-    }
-  }
-
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x, player.y, 32, 32);
-  ctx.fillStyle = '#f15bb5';
-  ctx.font = '16px monospace';
-  const promptText = activeRom ? `${activeRom.name} • ${activeRom.systemLabel}` : 'Upload a ROM to start';
-  ctx.fillText(promptText, 16, 24);
 }
 
 function renderLibrary() {
@@ -82,26 +72,37 @@ function renderLibrary() {
 
     const playButton = createLibraryButton('Play', 'play', rom.id);
     const deleteButton = createLibraryButton('Delete', 'delete', rom.id);
-
     item.append(meta, playButton, deleteButton);
     libraryList.appendChild(item);
   });
 }
 
 async function startRom(rom) {
-  activeRom = rom;
-  const loaded = await loader.loadCore(rom.system);
+  try {
+    setStatus('Loading core...');
+    const loaded = await loader.loadCore(rom.system);
 
-  if (loaded.type === 'mock') {
-    activeCoreLabel.textContent = `Core: ${loaded.config.label} (mock)`;
-    setStatus(`${rom.name} (core unavailable, demo mode)`);
-  } else {
-    activeCoreLabel.textContent = `Core: ${loaded.config.label} (wasm)`;
+    if (activeCore && activeCore !== loaded.core) {
+      activeCore.stop();
+    }
+
+    activeCore = loaded.core;
+    activeCoreLabel.textContent = `Core: ${loaded.config.label}`;
+
+    const romBuffer = StorageManager.dataURLToArrayBuffer(rom.data);
+    await activeCore.loadROM(romBuffer);
+    activeCore.setInput(controllerState);
+    activeCore.start();
+
+    activeRom = rom;
+    library = storage.touchRom(rom.id);
+    renderLibrary();
     setStatus(rom.name);
+  } catch (error) {
+    console.error(error);
+    drawBootScreen('Core failed to load. Check /cores assets.');
+    setStatus(`Failed - ${rom.name}`);
   }
-
-  storage.touchRom(rom.id);
-  renderFrame();
 }
 
 romInput.addEventListener('change', async (event) => {
@@ -114,16 +115,13 @@ romInput.addEventListener('change', async (event) => {
     return;
   }
 
-  setStatus('Reading ROM...');
-  const romData = await StorageManager.fileToBase64(file);
-
   const rom = {
     id: `${file.name}-${file.size}-${file.lastModified}`,
     name: file.name,
     system,
     systemLabel: EmulatorLoader.listSystems()[system].label,
     size: file.size,
-    data: romData,
+    data: await StorageManager.fileToBase64(file),
     lastPlayed: new Date().toISOString(),
     addedAt: new Date().toISOString(),
   };
@@ -143,11 +141,13 @@ libraryList.addEventListener('click', async (event) => {
     library = storage.deleteRom(romId);
     if (activeRom?.id === romId) {
       activeRom = null;
+      activeCore?.stop();
+      activeCore = null;
       activeCoreLabel.textContent = 'Core: None';
       setStatus('None');
+      drawBootScreen();
     }
     renderLibrary();
-    renderFrame();
     return;
   }
 
@@ -158,28 +158,34 @@ libraryList.addEventListener('click', async (event) => {
 });
 
 saveStateBtn.addEventListener('click', () => {
-  if (!activeRom) {
+  if (!activeRom || !activeCore) {
     setStatus('Load a ROM first');
     return;
   }
-  storage.saveState(activeRom.id, { player, romName: activeRom.name });
+
+  const serializedState = activeCore.serializeState();
+  if (!serializedState) {
+    setStatus('Save state not supported by this core');
+    return;
+  }
+
+  storage.saveState(activeRom.id, { serializedState });
   setStatus(`Saved state for ${activeRom.name}`);
 });
 
 loadStateBtn.addEventListener('click', () => {
-  if (!activeRom) {
+  if (!activeRom || !activeCore) {
     setStatus('Load a ROM first');
     return;
   }
 
   const state = storage.loadState(activeRom.id);
-  if (!state) {
+  if (!state?.serializedState) {
     setStatus('No save state found');
     return;
   }
 
-  Object.assign(player, state.player || {});
-  renderFrame();
+  activeCore.loadSerializedState(state.serializedState);
   setStatus(`Loaded state for ${activeRom.name}`);
 });
 
@@ -197,6 +203,6 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js'));
 }
 
-library = storage.sortLibraryByRecentPlay(library);
+window.addEventListener('beforeunload', () => loader.unloadAll());
 renderLibrary();
-renderFrame();
+drawBootScreen();
