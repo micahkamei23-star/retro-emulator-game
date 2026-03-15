@@ -81,6 +81,26 @@ self.addEventListener('activate', (event) => {
   })());
 });
 
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(
+      keys
+        .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+        .map((key) => caches.delete(key)),
+    );
+
+    const cache = await caches.open(CACHE_NAME);
+    await cacheAssets(cache, CORE_ASSETS);
+    await self.clients.claim();
+
+    const clients = await self.clients.matchAll({ type: 'window' });
+    clients.forEach((client) => client.postMessage({ type: 'SW_UPDATED', version: SW_VERSION }));
+  })());
+});
+
     await Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)));
     const cache = await caches.open(CACHE_NAME);
     await cacheAssets(cache, CORE_ASSETS);

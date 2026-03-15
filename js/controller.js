@@ -85,6 +85,12 @@ class Controller {
     return this.getControlFromElement(target);
   }
 
+
+  getControlFromTouchPoint(touch) {
+    const target = document.elementFromPoint(touch.clientX, touch.clientY);
+    return this.getControlFromElement(target);
+  }
+
   assignTouchToControl(touchId, control, { vibrate = false } = {}) {
     const previousControl = this.touchToControl.get(touchId);
     if (previousControl === control) return;
@@ -92,6 +98,7 @@ class Controller {
     if (previousControl) {
       this.updateControlTouchCount(previousControl, -1);
       this.touchToControl.delete(touchId);
+    }
     }
     }
     this.activeTouchCountByControl.set(control, next);

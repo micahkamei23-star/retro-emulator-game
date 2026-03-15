@@ -3,6 +3,18 @@ import Controller from './controller.js';
 import StorageManager from './storage.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('Retro Emulator loaded');
+  initApp();
+});
+
+
+window.addEventListener('load', () => {
+  const boot = document.getElementById('bootOverlay');
+  if (boot) {
+    boot.remove();
+  }
+});
+
   initApp();
 });
 
@@ -153,6 +165,7 @@ async function runStartupSequence() {
   appShell?.classList.add('ui-visible');
 
   await wait(500);
+  bootOverlay.remove();
   bootOverlay.style.display = 'none';
 }
 
@@ -162,6 +175,7 @@ function hideBootOverlayFallback() {
   bootOverlay.style.transition = 'opacity 0.5s ease';
   setTimeout(() => {
     if (bootOverlay.style.display !== 'none') {
+      bootOverlay.remove();
       bootOverlay.style.display = 'none';
     }
   }, 500);
