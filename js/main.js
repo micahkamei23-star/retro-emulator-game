@@ -12,12 +12,13 @@ const SYSTEM_ASPECT_RATIO = {
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+
 document.addEventListener('DOMContentLoaded', () => {
+
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
   const romUploadInput = document.getElementById('rom-upload');
   const uploadButton = document.getElementById('upload-btn');
-  const romInput = document.getElementById('romInput');
   const libraryList = document.getElementById('libraryList');
   const recentList = document.getElementById('recentList');
   const activeSystemLabel = document.getElementById('activeSystem');
@@ -27,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const loadStateBtn = document.getElementById('loadStateBtn');
   const clearStateBtn = document.getElementById('clearStateBtn');
   const appShell = document.querySelector('.app-shell');
-  const bootOverlay = document.getElementById('bootOverlay');
   const cartridgeOverlay = document.getElementById('cartridgeOverlay');
   const cartridgeLabel = document.getElementById('cartridgeLabel');
   const startupSoundToggle = document.getElementById('startupSoundToggle');
@@ -93,6 +93,15 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.fillText(message, 20, 72);
   }
 
+  function detectSystemFromExtension(fileName) {
+    const lower = fileName.toLowerCase();
+    if (lower.endsWith('.gba')) return 'gba';
+    if (lower.endsWith('.nes')) return 'nes';
+    if (lower.endsWith('.sfc') || lower.endsWith('.smc')) return 'snes';
+    if (lower.endsWith('.gb')) return 'gb';
+    return null;
+  }
+
   function createLibraryButton(label, action, romId) {
     const button = document.createElement('button');
     button.type = 'button';
@@ -126,29 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
     oscillator.stop(now + 0.58);
   }
 
-  async function runStartupSequence() {
-    playStartupSound();
-    await wait(1500);
-
-    if (!bootOverlay) return;
-    bootOverlay.style.opacity = '0';
-    bootOverlay.style.transition = 'opacity 0.5s ease';
-    appShell?.classList.add('ui-visible');
-
-    await wait(500);
-    bootOverlay.style.display = 'none';
-  }
-
-  function hideBootOverlayFallback() {
-    if (!bootOverlay) return;
-    bootOverlay.style.opacity = '0';
-    bootOverlay.style.transition = 'opacity 0.5s ease';
-    setTimeout(() => {
-      if (bootOverlay.style.display !== 'none') {
-        bootOverlay.style.display = 'none';
-      }
-    }, 500);
-  }
 
   async function playCartridgeInsert(romName) {
     cartridgeLabel.textContent = `INSERTING ${romName.toUpperCase()}...`;
@@ -265,74 +251,72 @@ document.addEventListener('DOMContentLoaded', () => {
     await exitFullscreenMode();
   }
 
-  const handleRomSelection = async (event) => {
-    const [file] = event.target.files || [];
-    if (!file) return;
+  async function bootRomFromFile(file) {
+    console.log('ROM selected', file.name);
 
-    console.log('[ROM] selected file:', file);
-  }
-
-  async function stopGameMode() {
-    activeCore?.stop();
-    activeCore = null;
-    activeRom = null;
-    activeSystemLabel.textContent = 'System: None';
-    activeCoreLabel.textContent = 'Core: None';
-    setStatus('None');
-    drawBootScreen();
-    setCanvasAspectRatio();
-    setGameMode(false);
-    await exitFullscreenMode();
-  }
-
-  romInput.addEventListener('change', async (event) => {
-    const [file] = event.target.files;
-    if (!file) return;
-
-    const system = loader.resolveSystemByFilename(file.name);
+    const system = detectSystemFromExtension(file.name);
     if (!system) {
       setStatus('Unsupported format');
-      romUploadInput.value = '';
-      romInput.value = '';
+      activeSystemLabel.textContent = 'System: None';
+      activeCoreLabel.textContent = 'Core: None';
+      activeRomLabel.textContent = `ROM: ${file.name}`;
       return;
     }
+
+    const systemConfig = EmulatorLoader.listSystems()[system];
+    console.log('System detected:', system);
+    activeSystemLabel.textContent = `System: ${systemConfig?.systemName || system.toUpperCase()}`;
+    activeCoreLabel.textContent = `Core: ${systemConfig?.label || 'Loading...'}`;
+    activeRomLabel.textContent = `ROM: ${file.name}`;
+
+    const romArrayBuffer = await file.arrayBuffer();
+    const romBytes = new Uint8Array(romArrayBuffer);
+    console.log('ROM buffer loaded', romBytes.length);
+
+    const loaded = await loader.loadCore(system);
+
+    if (activeCore && activeCore !== loaded.core) activeCore.stop();
+    activeCore = loaded.core;
+
+    activeSystemLabel.textContent = `System: ${loaded.systemName}`;
+    activeCoreLabel.textContent = `Core: ${loaded.config.label}`;
+
+    await activeCore.loadROM(romBytes);
+    activeCore.setInput(controllerState);
+    console.log('Starting emulator');
+    activeCore.start();
+
+    setCanvasAspectRatio(system);
+    setGameMode(true);
+
+    activeRom = {
+      id: `${file.name}-${file.size}-${file.lastModified}`,
+      name: file.name,
+      system,
+    };
+  }
+
+  romUploadInput?.addEventListener('change', async (event) => {
+    const [file] = event.target.files || [];
+    if (!file) return;
 
     setStatus('Reading ROM...');
 
     try {
-      const [romBuffer, romDataUrl] = await Promise.all([
-        StorageManager.readFileAsArrayBuffer(file),
-        StorageManager.fileToBase64(file),
-      ]);
-
-      const rom = {
-        id: `${file.name}-${file.size}-${file.lastModified}`,
-        name: file.name,
-        system,
-        systemLabel: EmulatorLoader.listSystems()[system].systemName,
-        size: file.size,
-        data: romDataUrl,
-        boxArt: '',
-        lastPlayed: new Date().toISOString(),
-        addedAt: new Date().toISOString(),
-      };
-
-      library = storage.upsertRom(rom);
-      renderLibrary();
-      await startRom(rom, romBuffer);
+      await bootRomFromFile(file);
     } catch (error) {
-      console.error('[ROM] failed to process upload', error);
-      setStatus(`Failed to read ${file.name}`);
+      console.error('[ROM] failed to boot', error);
+      setStatus(`Failed - ${file.name}`);
+      setGameMode(false);
     } finally {
       romUploadInput.value = '';
     }
-  };
+  });
 
   uploadButton?.addEventListener('click', () => {
     romUploadInput?.click();
   });
 
-  romUploadInput?.addEventListener('change', handleRomSelection);
 
   libraryList.addEventListener('click', async (event) => {
     const button = event.target.closest('button');
@@ -403,78 +387,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setStatus(`Cleared state for ${activeRom.name}`);
   });
 
-      romInput.value = '';
-    }
-  });
-
-  libraryList.addEventListener('click', async (event) => {
-    const button = event.target.closest('button');
-    if (!button) return;
-
-    const romId = button.dataset.id;
-    if (button.dataset.action === 'delete') {
-      library = storage.deleteRom(romId);
-      if (activeRom?.id === romId) await stopGameMode();
-      renderLibrary();
-      return;
-    }
-
-    const rom = library.find((entry) => entry.id === romId);
-    if (rom) await startRom(rom);
-  });
-
-  exitFullscreenOverlay.addEventListener('touchstart', async (event) => {
-    event.preventDefault();
-    await stopGameMode();
-  }, { passive: false });
-  exitFullscreenOverlay.addEventListener('click', () => {
-    stopGameMode();
-  });
-  exitGameBtn.addEventListener('click', () => {
-    stopGameMode();
-  });
-
-  saveStateBtn.addEventListener('click', () => {
-    if (!activeRom || !activeCore) {
-      setStatus('Load a ROM first');
-      return;
-    }
-
-    const serializedState = activeCore.serializeState();
-    if (!serializedState) {
-      setStatus('Save state not supported by this core');
-      return;
-    }
-
-    storage.saveState(activeRom.id, { serializedState });
-    setStatus(`Saved state for ${activeRom.name}`);
-  });
-
-  loadStateBtn.addEventListener('click', () => {
-    if (!activeRom || !activeCore) {
-      setStatus('Load a ROM first');
-      return;
-    }
-
-    const state = storage.loadState(activeRom.id);
-    if (!state?.serializedState) {
-      setStatus('No save state found');
-      return;
-    }
-
-    activeCore.loadSerializedState(state.serializedState);
-    setStatus(`Loaded state for ${activeRom.name}`);
-  });
-
-  clearStateBtn.addEventListener('click', () => {
-    if (!activeRom) {
-      setStatus('Load a ROM first');
-      return;
-    }
-
-    storage.clearState(activeRom.id);
-    setStatus(`Cleared state for ${activeRom.name}`);
-  });
 
   const blockTouchDefaults = (event) => event.preventDefault();
   ['touchstart', 'touchend', 'touchmove', 'touchcancel'].forEach((eventName) => {
@@ -507,9 +419,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderLibrary();
   drawBootScreen();
-  runStartupSequence().catch((error) => {
-    console.error('Boot sequence failed, using fallback', error);
-    hideBootOverlayFallback();
-  });
-  setTimeout(hideBootOverlayFallback, 3000);
 });
