@@ -19,6 +19,7 @@ const cartridgeOverlay = document.getElementById('cartridgeOverlay');
 const cartridgeLabel = document.getElementById('cartridgeLabel');
 const startupSoundToggle = document.getElementById('startupSoundToggle');
 const exitFullscreenOverlay = document.getElementById('exitFullscreenOverlay');
+const exitGameBtn = document.getElementById('exitGameBtn');
 
 const loader = new EmulatorLoader(canvas);
 const storage = new StorageManager();
@@ -36,6 +37,41 @@ new Controller(({ control, pressed }) => {
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const setStatus = (message) => { activeRomLabel.textContent = `ROM: ${message}`; };
 
+const SYSTEM_ASPECT_RATIO = {
+  nes: '4 / 3',
+  gb: '10 / 9',
+  gbc: '10 / 9',
+  gba: '3 / 2',
+  snes: '4 / 3',
+};
+
+const setCanvasAspectRatio = (system) => {
+  document.body.style.setProperty('--game-aspect', SYSTEM_ASPECT_RATIO[system] || '4 / 3');
+};
+
+async function enterFullscreenMode() {
+  if (!document.fullscreenEnabled || document.fullscreenElement) return;
+
+  try {
+    await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
+  } catch (error) {
+    console.warn('Fullscreen request was not granted.', error);
+  }
+}
+
+async function exitFullscreenMode() {
+  if (!document.fullscreenElement) return;
+  try {
+    await document.exitFullscreen();
+  } catch (error) {
+    console.warn('Could not exit fullscreen mode.', error);
+  }
+}
+
+function setGameMode(isActive) {
+  document.body.classList.toggle('game-active', isActive);
+  exitFullscreenOverlay.hidden = !isActive;
+  exitGameBtn.hidden = !isActive;
 function setGameMode(isActive) {
   document.body.classList.toggle('game-active', isActive);
   exitFullscreenOverlay.hidden = !isActive;
@@ -217,6 +253,9 @@ async function startRom(rom) {
     library = storage.touchRom(rom.id);
     renderLibrary();
     setStatus(rom.name);
+    setCanvasAspectRatio(rom.system);
+    setGameMode(true);
+    await enterFullscreenMode();
     setGameMode(true);
   } catch (error) {
     console.error(error);
@@ -227,6 +266,7 @@ async function startRom(rom) {
   }
 }
 
+async function stopGameMode() {
 function stopGameMode() {
   activeCore?.stop();
   activeCore = null;
@@ -235,6 +275,9 @@ function stopGameMode() {
   activeCoreLabel.textContent = 'Core: None';
   setStatus('None');
   drawBootScreen();
+  setCanvasAspectRatio();
+  setGameMode(false);
+  await exitFullscreenMode();
   setGameMode(false);
 }
 
@@ -273,6 +316,7 @@ libraryList.addEventListener('click', async (event) => {
   const romId = button.dataset.id;
   if (button.dataset.action === 'delete') {
     library = storage.deleteRom(romId);
+    if (activeRom?.id === romId) await stopGameMode();
     if (activeRom?.id === romId) stopGameMode();
     if (activeRom?.id === romId) {
       activeRom = null;
@@ -290,6 +334,12 @@ libraryList.addEventListener('click', async (event) => {
   if (rom) await startRom(rom);
 });
 
+exitFullscreenOverlay.addEventListener('touchstart', async (event) => {
+  event.preventDefault();
+  await stopGameMode();
+}, { passive: false });
+exitFullscreenOverlay.addEventListener('click', () => { stopGameMode(); });
+exitGameBtn.addEventListener('click', () => { stopGameMode(); });
 exitFullscreenOverlay.addEventListener('touchstart', (event) => {
   event.preventDefault();
   stopGameMode();
