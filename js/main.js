@@ -48,6 +48,10 @@ function drawBootScreen(message = 'Upload a ROM to start') {
   ctx.fillText('RETRO EMULATOR', 20, 40);
   ctx.fillStyle = '#f15bb5';
   ctx.font = '14px "Press Start 2P", monospace';
+  ctx.font = '20px monospace';
+  ctx.fillText('RETRO EMULATOR', 20, 40);
+  ctx.fillStyle = '#f15bb5';
+  ctx.font = '16px monospace';
   ctx.fillText(message, 20, 72);
 }
 
@@ -136,6 +140,10 @@ async function startRom(rom) {
     await playCartridgeInsert(rom.name.replace(/\.[^/.]+$/, ''));
 
     const loaded = await loader.loadCore(rom.system);
+  try {
+    setStatus('Loading core...');
+    const loaded = await loader.loadCore(rom.system);
+
     if (activeCore && activeCore !== loaded.core) {
       activeCore.stop();
     }

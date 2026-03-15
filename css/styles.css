@@ -103,6 +103,13 @@ body {
   gap: 0.4rem;
   margin-top: 0.8rem;
   font-size: 0.6rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  letter-spacing: 1px;
+}
+
+.subtitle {
+  margin: 0.3rem 0 0;
+  opacity: 0.8;
 }
 
 .console-body {
@@ -132,6 +139,10 @@ body {
   border-radius: 10px;
   overflow: hidden;
   box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.7), 0 0 18px rgba(0, 245, 212, 0.2);
+}
+
+  font-size: 0.85rem;
+  margin-bottom: 0.6rem;
 }
 
 #gameCanvas {
@@ -240,6 +251,25 @@ body {
 }
 
 .warning { border-color: var(--warning); }
+.file-input-label {
+  cursor: pointer;
+  border: none;
+  border-radius: 999px;
+  padding: 0.5rem 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid rgba(247, 247, 255, 0.25);
+}
+
+.action-btn:hover,
+.touch-btn:active,
+.file-input-label:hover {
+  background: #3a2d61;
+}
+
+.warning { border-color: var(--warning); }
+
 #romInput { display: none; }
 
 .library-list {
@@ -260,6 +290,14 @@ body {
   padding: 0.45rem;
   border-radius: 8px;
   margin-bottom: 0.35rem;
+}
+
+.library-item button {
+  border: none;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: #34285a;
+  color: var(--text);
 }
 
 .controls-section {
@@ -317,4 +355,15 @@ button:focus-visible,
 @keyframes insertCart {
   from { transform: translateY(-180px); }
   to { transform: translateY(-12px); }
+
+.touch-btn {
+  touch-action: none;
+  user-select: none;
+}
+
+
+button:focus-visible,
+.file-input-label:focus-visible {
+  outline: 2px solid var(--neon);
+  outline-offset: 2px;
 }
