@@ -15,6 +15,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
 let loaderFailsafeTimer = null;
 
 function getLoadingScreen() {
@@ -312,13 +313,6 @@ document.addEventListener('DOMContentLoaded', () => {
     await exitFullscreenMode();
   }
 
-  const handleRomSelection = async (event) => {
-    const [file] = event.target.files || [];
-    if (!file) return;
-
-    console.log('[ROM] selected file:', file);
-  }
-
   async function stopGameMode() {
     activeCore?.stop();
     activeCore = null;
@@ -380,7 +374,6 @@ document.addEventListener('DOMContentLoaded', () => {
     romUploadInput?.click();
   });
 
-  romUploadInput?.addEventListener('change', handleRomSelection);
 
   libraryList.addEventListener('click', async (event) => {
     const button = event.target.closest('button');

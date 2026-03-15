@@ -353,7 +353,6 @@ body.game-active #gameCanvas { aspect-ratio: 16 / 10; max-height: 68vh; margin: 
   animation: buttonGlow 0.18s ease;
 }
 .warning { border-color: var(--warning); }
-#romInput { display: none; }
 
 .recent-list,
 }
@@ -378,7 +377,6 @@ body.game-active #gameCanvas { aspect-ratio: 16 / 10; max-height: 68vh; margin: 
 
 .warning { border-color: var(--warning); }
 
-#romInput { display: none; }
 
 .library-list {
   margin: 0.8rem 0 0;
