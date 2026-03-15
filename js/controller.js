@@ -91,6 +91,7 @@ class Controller {
       this.updateControlTouchCount(previousControl, -1);
       this.touchToControl.delete(touchId);
     }
+    }
     this.activeTouchCountByControl.set(control, next);
     if (previous === 0) {
       this.setPressedVisual(control, true);

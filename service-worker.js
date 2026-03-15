@@ -57,6 +57,8 @@ self.addEventListener('activate', (event) => {
 
 });
 
+});
+
   './cores/jsnes/jsnes.min.js',
   './cores/gameboy/gameboy.min.js',
   './cores/mgba/mgba.wasm',
