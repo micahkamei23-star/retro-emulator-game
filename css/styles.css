@@ -70,6 +70,33 @@ body.game-active .screen-panel {
   background: transparent;
 }
 
+.app-shell.game-mode .library-panel { display: none; }
+.app-shell.game-mode .console-header,
+.app-shell.game-mode .game-actions { display: none; }
+.app-shell.game-mode {
+  max-width: 100vw;
+  border-radius: 0;
+  border-width: 0;
+  box-shadow: none;
+  min-height: 100vh;
+}
+.app-shell.game-mode .console-body {
+  grid-template-columns: 1fr;
+  padding: 0.4rem;
+  align-items: center;
+}
+.app-shell.game-mode .screen-panel {
+  padding: 0.4rem;
+  border-width: 0;
+  background: transparent;
+}
+.app-shell.game-mode .screen-frame { box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.7), 0 0 26px rgba(0, 245, 212, 0.45); }
+.app-shell.game-mode #gameCanvas {
+  aspect-ratio: var(--game-aspect, 4 / 3);
+  max-height: min(86vh, 86dvh);
+  margin: 0 auto;
+}
+
 .screen-panel,
 .library-panel { background: var(--panel); border-radius: 12px; border: 2px solid rgba(0, 245, 212, 0.2); padding: 0.9rem; }
 

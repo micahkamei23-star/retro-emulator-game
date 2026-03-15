@@ -2,6 +2,10 @@ import EmulatorLoader from './emulator-loader.js';
 import Controller from './controller.js';
 import StorageManager from './storage.js';
 
+document.addEventListener('DOMContentLoaded', () => {
+  initApp();
+});
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const romInput = document.getElementById('romInput');
@@ -70,6 +74,9 @@ async function exitFullscreenMode() {
 
 function setGameMode(isActive) {
   document.body.classList.toggle('game-active', isActive);
+  appShell.classList.toggle('game-mode', isActive);
+  exitFullscreenOverlay.hidden = !isActive;
+  exitGameBtn.hidden = !isActive;
   exitFullscreenOverlay.hidden = !isActive;
   exitGameBtn.hidden = !isActive;
 function setGameMode(isActive) {
@@ -138,6 +145,46 @@ function playStartupSound() {
 
 async function runStartupSequence() {
   playStartupSound();
+  await wait(1500);
+
+  if (!bootOverlay) return;
+  bootOverlay.style.opacity = '0';
+  bootOverlay.style.transition = 'opacity 0.5s ease';
+  appShell?.classList.add('ui-visible');
+
+  await wait(500);
+  bootOverlay.style.display = 'none';
+}
+
+function hideBootOverlayFallback() {
+  if (!bootOverlay) return;
+  bootOverlay.style.opacity = '0';
+  bootOverlay.style.transition = 'opacity 0.5s ease';
+  setTimeout(() => {
+    if (bootOverlay.style.display !== 'none') {
+      bootOverlay.style.display = 'none';
+    }
+  }, 500);
+}
+
+function initApp() {
+  console.log('Retro Emulator starting...');
+
+  renderLibrary();
+  drawBootScreen();
+
+  runStartupSequence().catch((error) => {
+    console.error('Boot sequence failed, using fallback', error);
+    hideBootOverlayFallback();
+  });
+
+  setTimeout(() => {
+    if (bootOverlay?.style.display !== 'none') {
+      hideBootOverlayFallback();
+    }
+  }, 3000);
+}
+
   await wait(1700);
   bootOverlay.classList.add('fade-out');
   appShell.classList.add('ui-visible');
@@ -229,15 +276,18 @@ async function startRom(rom) {
     setStatus('Loading core...');
     await playCartridgeInsert(rom.name.replace(/\.[^/.]+$/, ''));
 
+    console.log('[ROM] loading core for system:', rom.system);
     const loaded = await loader.loadCore(rom.system);
     if (activeCore && activeCore !== loaded.core) activeCore.stop();
 
     activeCore = loaded.core;
+    console.log('[Core] loaded:', loaded.config.label);
     activeSystemLabel.textContent = `System: ${loaded.systemName}`;
     activeCoreLabel.textContent = `Core: ${loaded.config.label}`;
 
     const resolvedRomBuffer = romBuffer || StorageManager.dataURLToArrayBuffer(rom.data);
     await activeCore.loadROM(resolvedRomBuffer);
+    console.log('[ROM] loaded into core:', rom.name, 'bytes:', resolvedRomBuffer.byteLength);
   try {
     setStatus('Loading core...');
     const loaded = await loader.loadCore(rom.system);
@@ -261,6 +311,10 @@ async function startRom(rom) {
     setCanvasAspectRatio(rom.system);
     setGameMode(true);
     await enterFullscreenMode();
+    console.log('[Game] started:', rom.name);
+  } catch (error) {
+    console.error(error);
+    hideBootOverlayFallback();
     setGameMode(true);
   } catch (error) {
     console.error(error);
@@ -290,6 +344,7 @@ romInput.addEventListener('change', async (event) => {
   const [file] = event.target.files;
   if (!file) return;
 
+  console.log('[ROM] selected:', file.name, `(${file.size} bytes)`);
   const system = loader.resolveSystemByFilename(file.name);
   if (!system) {
     setStatus('Unsupported format');
@@ -300,6 +355,13 @@ romInput.addEventListener('change', async (event) => {
   setStatus('Reading ROM...');
 
   try {
+    const [romBuffer, romDataUrl] = await Promise.all([
+      StorageManager.readFileAsArrayBuffer(file),
+      StorageManager.fileToBase64(file),
+    ]);
+
+    console.log('[ROM] read complete:', file.name);
+    console.log('[ROM] detected system:', system);
     const romBuffer = await StorageManager.readFileAsArrayBuffer(file);
     const romDataUrl = StorageManager.arrayBufferToDataURL(romBuffer, file.type || 'application/octet-stream');
 
@@ -316,6 +378,11 @@ romInput.addEventListener('change', async (event) => {
     };
 
     library = storage.upsertRom(rom);
+    console.log('[Library] ROM upserted:', rom.id);
+    renderLibrary();
+    await startRom(rom, romBuffer);
+  } catch (error) {
+    console.error('[ROM] failed to process upload', error);
     renderLibrary();
     await startRom(rom, romBuffer);
   } catch (error) {
@@ -450,6 +517,23 @@ const blockTouchDefaults = (event) => event.preventDefault();
 });
 
 if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const registration = await navigator.serviceWorker.register('./service-worker.js');
+      console.log('[SW] registered:', registration.scope);
+    } catch (error) {
+      console.error('[SW] registration failed', error);
+    }
+  });
+
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data?.type === 'SW_UPDATED') {
+      console.log('[SW] cache updated to', event.data.version);
+    }
+  });
+}
+
+window.addEventListener('beforeunload', () => loader.unloadAll());
   window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js'));
 }
 

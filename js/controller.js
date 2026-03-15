@@ -44,6 +44,7 @@ class Controller {
       this.setPressedVisual(control, true);
       this.emit(control, true, 'touch');
     }
+    }
 
   emit(control, pressed, source) {
     if (this.state.get(control) === pressed) return;
@@ -109,6 +110,7 @@ class Controller {
     const target = document.elementFromPoint(touch.clientX, touch.clientY);
     return this.getControlFromElement(target);
   }
+
 
   assignTouchToControl(touchId, control, { vibrate = false } = {}) {
     const previousControl = this.touchToControl.get(touchId);
