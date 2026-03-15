@@ -1,57 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retro Emulator Game</title>
-    <link rel="manifest" href="manifest.json">
-    <style>
-        body {
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #111;
-            color: white;
-        }
-        canvas {
-            border: 1px solid #fff;
-        }
-        .controller {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        .button {
-            background-color: #333;
-            padding: 15px;
-            margin: 5px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .button:active {
-            background-color: #555;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#231942" />
+  <title>Retro Emulator Game</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
-    <h1>Retro Emulator Game</h1>
-    <canvas id="gameCanvas" width="640" height="480"></canvas>
-    <div class="controller">
-        <div class="button" id="left">Left</div>
-        <div class="button" id="up">Up</div>
-        <div class="button" id="down">Down</div>
-        <div class="button" id="right">Right</div>
-    </div>
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
+  <div class="app-shell">
+    <header class="console-header">
+      <h1>Retro Emulator Game</h1>
+      <p class="subtitle">Offline-ready handheld console</p>
+    </header>
 
-        // Example game logic and rendering
-        ctx.fillStyle = 'red';
-        ctx.fillRect(50, 50, 100, 100);
-    </script>
+    <main class="console-body">
+      <section class="screen-panel">
+        <div class="status-row">
+          <span id="activeCore">Core: None</span>
+          <span id="activeRom">ROM: None</span>
+        </div>
+        <canvas id="gameCanvas" width="640" height="480" aria-label="Emulator screen"></canvas>
+        <div class="game-actions">
+          <button id="saveStateBtn" class="action-btn">Save State</button>
+          <button id="loadStateBtn" class="action-btn">Load State</button>
+          <button id="clearStateBtn" class="action-btn warning">Clear State</button>
+        </div>
+      </section>
+
+      <aside class="library-panel">
+        <h2>Game Library</h2>
+        <label for="romInput" class="file-input-label">Upload ROM</label>
+        <input id="romInput" type="file" accept=".nes,.smc,.sfc,.gb,.gba" />
+        <ul id="libraryList" class="library-list" aria-live="polite"></ul>
+      </aside>
+    </main>
+
+    <section class="controls-section" aria-label="Touch controls">
+      <div class="dpad">
+        <button data-control="up" class="touch-btn dpad-up">▲</button>
+        <button data-control="left" class="touch-btn dpad-left">◀</button>
+        <button data-control="right" class="touch-btn dpad-right">▶</button>
+        <button data-control="down" class="touch-btn dpad-down">▼</button>
+      </div>
+      <div class="action-cluster">
+        <button data-control="a" class="touch-btn action a">A</button>
+        <button data-control="b" class="touch-btn action b">B</button>
+        <button data-control="x" class="touch-btn action x">X</button>
+        <button data-control="y" class="touch-btn action y">Y</button>
+        <button data-control="select" class="touch-btn utility">Select</button>
+        <button data-control="start" class="touch-btn utility">Start</button>
+      </div>
+    </section>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
