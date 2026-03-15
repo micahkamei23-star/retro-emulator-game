@@ -9,15 +9,7 @@
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
-  <div id="bootOverlay" class="boot-overlay" aria-live="polite">
-    <div class="boot-logo">RETRO EMULATOR</div>
-    <div class="boot-dots" aria-hidden="true">
-      <span></span><span></span><span></span>
-    </div>
-    <p class="boot-text">Powering handheld system...</p>
-  </div>
-
-  <div class="app-shell">
+  <div class="app-shell ui-visible">
     <header class="console-header">
       <h1>Retro Emulator Game</h1>
       <p class="subtitle">Offline-ready handheld console</p>
@@ -55,7 +47,7 @@
       <aside class="library-panel">
         <h2>Game Library</h2>
         <button id="upload-btn" class="file-input-label" type="button">Upload ROM</button>
-        <input type="file" id="rom-upload" accept=".nes,.gba,.sfc,.gb" hidden />
+        <input type="file" id="rom-upload" accept=".nes,.gba,.sfc,.smc,.gb" hidden />
         <ol id="recentList" class="recent-list" aria-label="Recently played games"></ol>
         <ul id="libraryList" class="library-list" aria-live="polite"></ul>
       </aside>
