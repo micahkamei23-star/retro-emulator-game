@@ -1,6 +1,7 @@
 import EmulatorLoader from './emulator-loader.js';
 import Controller from './controller.js';
 import StorageManager from './storage.js';
+import { setupRomLoader } from './rom-loader.js';
 
 const SYSTEM_ASPECT_RATIO = {
   nes: '4 / 3',
@@ -13,6 +14,7 @@ const SYSTEM_ASPECT_RATIO = {
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 
+document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
@@ -325,6 +327,16 @@ document.addEventListener('DOMContentLoaded', () => {
     await exitFullscreenMode();
   }
 
+
+  setupRomLoader({
+    romInput: romUploadInput,
+    loader,
+    getCurrentCore: () => activeCore,
+    setCurrentCore: (core) => {
+      activeCore = core;
+    },
+    getControllerState: () => controllerState,
+    onStarted: ({ file, system }) => {
   async function bootRomFromFile(file) {
     console.log('ROM selected', file.name);
 
@@ -430,6 +442,19 @@ document.addEventListener('DOMContentLoaded', () => {
         name: file.name,
         system,
       };
+      setCanvasAspectRatio(system);
+      setGameMode(true);
+    },
+    setStatus,
+    setSystemLabel: (text) => {
+      activeSystemLabel.textContent = text;
+    },
+    setCoreLabel: (text) => {
+      activeCoreLabel.textContent = text;
+    },
+    setRomLabel: (text) => {
+      activeRomLabel.textContent = text;
+    },
     } catch (error) {
       console.error('[ROM] failed to boot', error);
       setStatus(`Failed - ${file.name}`);
