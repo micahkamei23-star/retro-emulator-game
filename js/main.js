@@ -15,6 +15,81 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 
 document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
+let loaderFailsafeTimer = null;
+
+function getLoadingScreen() {
+  return document.getElementById('loading-screen');
+}
+
+function showLoader() {
+  if (loaderFailsafeTimer) clearTimeout(loaderFailsafeTimer);
+
+  const loadingScreen = getLoadingScreen();
+  if (loadingScreen) {
+    loadingScreen.hidden = false;
+    loadingScreen.style.display = 'flex';
+    loadingScreen.style.opacity = '1';
+    loadingScreen.style.pointerEvents = 'auto';
+  }
+
+  loaderFailsafeTimer = setTimeout(() => {
+    hideLoader();
+  }, 3000);
+}
+
+function hideLoader() {
+  if (loaderFailsafeTimer) {
+    clearTimeout(loaderFailsafeTimer);
+    loaderFailsafeTimer = null;
+  }
+
+  const loadingScreen = getLoadingScreen();
+  if (!loadingScreen) return;
+
+  loadingScreen.style.opacity = '0';
+  loadingScreen.style.pointerEvents = 'none';
+  loadingScreen.hidden = true;
+  loadingScreen.style.display = 'none';
+}
+
+window.showLoader = showLoader;
+window.hideLoader = hideLoader;
+
+showLoader();
+
+function getBootScreenElement() {
+  const bootTextElement = Array.from(document.querySelectorAll('.boot-text')).find((element) => {
+    return (element.textContent || '').includes('Powering handheld system...');
+  });
+
+  if (bootTextElement) {
+    return bootTextElement.closest('#bootOverlay') || bootTextElement.parentElement || bootTextElement;
+  }
+
+  return document.getElementById('bootOverlay');
+}
+
+function forceRemoveBootScreen() {
+  const bootScreenElement = getBootScreenElement();
+  if (!bootScreenElement) return;
+
+  bootScreenElement.style.pointerEvents = 'none';
+  bootScreenElement.style.opacity = '0';
+  setTimeout(() => {
+    bootScreenElement.remove();
+  }, 1000);
+}
+
+document.addEventListener('DOMContentLoaded', forceRemoveBootScreen);
+
+document.addEventListener('DOMContentLoaded', () => {
+  hideLoader();
 
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
@@ -94,6 +169,14 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.fillText(message, 20, 72);
   }
 
+  function detectSystemFromExtension(fileName) {
+    const lower = fileName.toLowerCase();
+    if (lower.endsWith('.gba')) return 'gba';
+    if (lower.endsWith('.nes')) return 'nes';
+    if (lower.endsWith('.sfc') || lower.endsWith('.smc')) return 'snes';
+    if (lower.endsWith('.gb')) return 'gb';
+    return null;
+  }
 
   function createLibraryButton(label, action, romId) {
     const button = document.createElement('button');
@@ -254,6 +337,106 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     getControllerState: () => controllerState,
     onStarted: ({ file, system }) => {
+  async function bootRomFromFile(file) {
+    console.log('ROM selected', file.name);
+
+    const system = detectSystemFromExtension(file.name);
+  async function stopGameMode() {
+    activeCore?.stop();
+    activeCore = null;
+    activeRom = null;
+    activeSystemLabel.textContent = 'System: None';
+    activeCoreLabel.textContent = 'Core: None';
+    setStatus('None');
+    drawBootScreen();
+    setCanvasAspectRatio();
+    setGameMode(false);
+    await exitFullscreenMode();
+  }
+
+  async function bootRomFromFile(file) {
+    const system = detectSystemFromExtension(file.name);
+  romUploadInput?.addEventListener('change', async (event) => {
+    const [file] = event.target.files || [];
+    const [file] = event.target.files;
+    if (!file) return;
+
+    console.log('[ROM] selected file:', file);
+
+    const system = detectSystemFromExtension(file.name);
+    const system = loader.resolveSystemByFilename(file.name);
+    if (!system) {
+      setStatus('Unsupported format');
+      activeSystemLabel.textContent = 'System: None';
+      activeCoreLabel.textContent = 'Core: None';
+      activeRomLabel.textContent = `ROM: ${file.name}`;
+      return;
+    }
+
+    const systemConfig = EmulatorLoader.listSystems()[system];
+    console.log('System detected:', system);
+    activeSystemLabel.textContent = `System: ${systemConfig?.systemName || system.toUpperCase()}`;
+    activeCoreLabel.textContent = `Core: ${systemConfig?.label || 'Loading...'}`;
+    activeRomLabel.textContent = `ROM: ${file.name}`;
+
+    const romArrayBuffer = await file.arrayBuffer();
+    const romBytes = new Uint8Array(romArrayBuffer);
+    console.log('ROM buffer loaded', romBytes.length);
+      romUploadInput.value = '';
+      return;
+    }
+
+    const romArrayBuffer = await file.arrayBuffer();
+    const romBytes = new Uint8Array(romArrayBuffer);
+    const loaded = await loader.loadCore(system);
+
+    if (activeCore && activeCore !== loaded.core) activeCore.stop();
+    activeCore = loaded.core;
+
+    activeSystemLabel.textContent = `System: ${loaded.systemName}`;
+    activeCoreLabel.textContent = `Core: ${loaded.config.label}`;
+    activeRomLabel.textContent = `ROM: ${file.name}`;
+
+    await activeCore.loadROM(romBytes);
+    activeCore.setInput(controllerState);
+    activeCore.start();
+
+    setCanvasAspectRatio(system);
+    setGameMode(true);
+
+    activeRom = {
+      id: `${file.name}-${file.size}-${file.lastModified}`,
+      name: file.name,
+      system,
+    };
+  }
+
+  romUploadInput?.addEventListener('change', async (event) => {
+    const [file] = event.target.files || [];
+    if (!file) return;
+
+    console.log('[ROM] selected file:', file);
+    setStatus('Reading ROM...');
+
+    try {
+      await bootRomFromFile(file);
+      const romArrayBuffer = await file.arrayBuffer();
+      const romBytes = new Uint8Array(romArrayBuffer);
+      const loaded = await loader.loadCore(system);
+
+      if (activeCore && activeCore !== loaded.core) activeCore.stop();
+      activeCore = loaded.core;
+      activeSystemLabel.textContent = `System: ${loaded.systemName}`;
+      activeCoreLabel.textContent = `Core: ${loaded.config.label}`;
+      activeRomLabel.textContent = `ROM: ${file.name}`;
+
+      await activeCore.loadROM(romBytes);
+      activeCore.setInput(controllerState);
+      activeCore.start();
+
+      setCanvasAspectRatio(system);
+      setGameMode(true);
+
       activeRom = {
         id: `${file.name}-${file.size}-${file.lastModified}`,
         name: file.name,
@@ -272,6 +455,58 @@ document.addEventListener('DOMContentLoaded', () => {
     setRomLabel: (text) => {
       activeRomLabel.textContent = text;
     },
+    } catch (error) {
+      console.error('[ROM] failed to boot', error);
+      setStatus(`Failed - ${file.name}`);
+      setGameMode(false);
+    } finally {
+      romUploadInput.value = '';
+    }
+  });
+
+  uploadButton?.addEventListener('click', () => {
+    romUploadInput?.click();
+  });
+
+
+    const loaded = await loader.loadCore(system);
+
+    if (activeCore && activeCore !== loaded.core) activeCore.stop();
+    activeCore = loaded.core;
+
+    activeSystemLabel.textContent = `System: ${loaded.systemName}`;
+    activeCoreLabel.textContent = `Core: ${loaded.config.label}`;
+
+    await activeCore.loadROM(romBytes);
+    activeCore.setInput(controllerState);
+    console.log('Starting emulator');
+    activeCore.start();
+
+    setCanvasAspectRatio(system);
+    setGameMode(true);
+
+    activeRom = {
+      id: `${file.name}-${file.size}-${file.lastModified}`,
+      name: file.name,
+      system,
+    };
+  }
+
+  romUploadInput?.addEventListener('change', async (event) => {
+    const [file] = event.target.files || [];
+    if (!file) return;
+
+    setStatus('Reading ROM...');
+
+    try {
+      await bootRomFromFile(file);
+    } catch (error) {
+      console.error('[ROM] failed to boot', error);
+      setStatus(`Failed - ${file.name}`);
+      setGameMode(false);
+    } finally {
+      romUploadInput.value = '';
+    }
   });
 
   uploadButton?.addEventListener('click', () => {
