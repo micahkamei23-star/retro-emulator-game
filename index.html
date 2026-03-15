@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Emulator Game</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #111;
+            color: white;
+        }
+        canvas {
+            border: 1px solid #fff;
+        }
+        .controller {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .button {
+            background-color: #333;
+            padding: 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .button:active {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>Retro Emulator Game</h1>
+    <canvas id="gameCanvas" width="640" height="480"></canvas>
+    <div class="controller">
+        <div class="button" id="left">Left</div>
+        <div class="button" id="up">Up</div>
+        <div class="button" id="down">Down</div>
+        <div class="button" id="right">Right</div>
+    </div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Example game logic and rendering
+        ctx.fillStyle = 'red';
+        ctx.fillRect(50, 50, 100, 100);
+    </script>
+</body>
+</html>
