@@ -39,6 +39,20 @@ self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
     await cacheAssets(cache, APP_SHELL);
+  })());
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)));
+    const cache = await caches.open(CACHE_NAME);
+    await cacheAssets(cache, CORE_ASSETS);
+    await self.clients.claim();
+  })());
+});
+
   './cores/jsnes/jsnes.min.js',
   './cores/gameboy/gameboy.min.js',
   './cores/mgba/mgba.wasm',
