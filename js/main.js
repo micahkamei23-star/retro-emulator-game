@@ -72,6 +72,20 @@ function setGameMode(isActive) {
   document.body.classList.toggle('game-active', isActive);
   exitFullscreenOverlay.hidden = !isActive;
   exitGameBtn.hidden = !isActive;
+function setGameMode(isActive) {
+  document.body.classList.toggle('game-active', isActive);
+  exitFullscreenOverlay.hidden = !isActive;
+  if (activeCore) {
+    activeCore.setInput(controllerState);
+  }
+});
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function setStatus(message) {
+  activeRomLabel.textContent = `ROM: ${message}`;
 }
 
 function drawBootScreen(message = 'Upload a ROM to start') {
@@ -82,6 +96,10 @@ function drawBootScreen(message = 'Upload a ROM to start') {
   ctx.fillText('RETRO EMULATOR', 20, 40);
   ctx.fillStyle = '#f15bb5';
   ctx.font = '14px "Press Start 2P", monospace';
+  ctx.font = '20px monospace';
+  ctx.fillText('RETRO EMULATOR', 20, 40);
+  ctx.fillStyle = '#f15bb5';
+  ctx.font = '16px monospace';
   ctx.fillText(message, 20, 72);
 }
 
@@ -151,6 +169,8 @@ function renderLibrary() {
   libraryList.innerHTML = '';
   renderRecentList();
 
+function renderLibrary() {
+  libraryList.innerHTML = '';
   if (!library.length) {
     const emptyItem = document.createElement('li');
     emptyItem.textContent = 'No ROMs uploaded yet.';
@@ -174,6 +194,9 @@ function renderLibrary() {
 
     const meta = document.createElement('div');
     meta.className = 'library-meta';
+    item.className = 'library-item';
+
+    const meta = document.createElement('span');
     const title = document.createElement('strong');
     title.textContent = rom.name;
     const details = document.createElement('small');
@@ -188,6 +211,11 @@ function renderLibrary() {
 
     meta.append(title, details, actions);
     item.append(art, meta);
+    meta.append(title, document.createElement('br'), details);
+
+    const playButton = createLibraryButton('Play', 'play', rom.id);
+    const deleteButton = createLibraryButton('Delete', 'delete', rom.id);
+    item.append(meta, playButton, deleteButton);
     libraryList.appendChild(item);
   });
 }
@@ -205,6 +233,15 @@ async function startRom(rom) {
 
     activeCore = loaded.core;
     activeSystemLabel.textContent = `System: ${loaded.systemName}`;
+  try {
+    setStatus('Loading core...');
+    const loaded = await loader.loadCore(rom.system);
+
+    if (activeCore && activeCore !== loaded.core) {
+      activeCore.stop();
+    }
+
+    activeCore = loaded.core;
     activeCoreLabel.textContent = `Core: ${loaded.config.label}`;
 
     const romBuffer = StorageManager.dataURLToArrayBuffer(rom.data);
@@ -219,6 +256,7 @@ async function startRom(rom) {
     setCanvasAspectRatio(rom.system);
     setGameMode(true);
     await enterFullscreenMode();
+    setGameMode(true);
   } catch (error) {
     console.error(error);
     drawBootScreen('Core failed to load. Check /cores assets.');
@@ -229,6 +267,7 @@ async function startRom(rom) {
 }
 
 async function stopGameMode() {
+function stopGameMode() {
   activeCore?.stop();
   activeCore = null;
   activeRom = null;
@@ -239,6 +278,7 @@ async function stopGameMode() {
   setCanvasAspectRatio();
   setGameMode(false);
   await exitFullscreenMode();
+  setGameMode(false);
 }
 
 romInput.addEventListener('change', async (event) => {
@@ -277,6 +317,15 @@ libraryList.addEventListener('click', async (event) => {
   if (button.dataset.action === 'delete') {
     library = storage.deleteRom(romId);
     if (activeRom?.id === romId) await stopGameMode();
+    if (activeRom?.id === romId) stopGameMode();
+    if (activeRom?.id === romId) {
+      activeRom = null;
+      activeCore?.stop();
+      activeCore = null;
+      activeCoreLabel.textContent = 'Core: None';
+      setStatus('None');
+      drawBootScreen();
+    }
     renderLibrary();
     return;
   }
@@ -291,11 +340,33 @@ exitFullscreenOverlay.addEventListener('touchstart', async (event) => {
 }, { passive: false });
 exitFullscreenOverlay.addEventListener('click', () => { stopGameMode(); });
 exitGameBtn.addEventListener('click', () => { stopGameMode(); });
+exitFullscreenOverlay.addEventListener('touchstart', (event) => {
+  event.preventDefault();
+  stopGameMode();
+}, { passive: false });
+exitFullscreenOverlay.addEventListener('click', stopGameMode);
 
 saveStateBtn.addEventListener('click', () => {
   if (!activeRom || !activeCore) return setStatus('Load a ROM first');
   const serializedState = activeCore.serializeState();
   if (!serializedState) return setStatus('Save state not supported by this core');
+  if (rom) {
+    await startRom(rom);
+  }
+});
+
+saveStateBtn.addEventListener('click', () => {
+  if (!activeRom || !activeCore) {
+    setStatus('Load a ROM first');
+    return;
+  }
+
+  const serializedState = activeCore.serializeState();
+  if (!serializedState) {
+    setStatus('Save state not supported by this core');
+    return;
+  }
+
   storage.saveState(activeRom.id, { serializedState });
   setStatus(`Saved state for ${activeRom.name}`);
 });
@@ -304,12 +375,28 @@ loadStateBtn.addEventListener('click', () => {
   if (!activeRom || !activeCore) return setStatus('Load a ROM first');
   const state = storage.loadState(activeRom.id);
   if (!state?.serializedState) return setStatus('No save state found');
+  if (!activeRom || !activeCore) {
+    setStatus('Load a ROM first');
+    return;
+  }
+
+  const state = storage.loadState(activeRom.id);
+  if (!state?.serializedState) {
+    setStatus('No save state found');
+    return;
+  }
+
   activeCore.loadSerializedState(state.serializedState);
   setStatus(`Loaded state for ${activeRom.name}`);
 });
 
 clearStateBtn.addEventListener('click', () => {
   if (!activeRom) return setStatus('Load a ROM first');
+  if (!activeRom) {
+    setStatus('Load a ROM first');
+    return;
+  }
+
   storage.clearState(activeRom.id);
   setStatus(`Cleared state for ${activeRom.name}`);
 });
@@ -318,6 +405,8 @@ const blockTouchDefaults = (event) => event.preventDefault();
 ['touchstart', 'touchend', 'touchmove', 'touchcancel'].forEach((eventName) => {
   canvas.addEventListener(eventName, blockTouchDefaults, { passive: false });
   document.body.addEventListener(eventName, blockTouchDefaults, { passive: false });
+['touchstart', 'touchend', 'touchmove'].forEach((eventName) => {
+  canvas.addEventListener(eventName, blockTouchDefaults, { passive: false });
 });
 
 [canvas, document.body].forEach((element) => {
