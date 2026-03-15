@@ -16,6 +16,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
 let loaderFailsafeTimer = null;
 
 function getLoadingScreen() {
@@ -162,6 +163,15 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.fillStyle = '#f15bb5';
     ctx.font = '16px monospace';
     ctx.fillText(message, 20, 72);
+  }
+
+  function detectSystemFromExtension(fileName) {
+    const lower = fileName.toLowerCase();
+    if (lower.endsWith('.gba')) return 'gba';
+    if (lower.endsWith('.nes')) return 'nes';
+    if (lower.endsWith('.sfc') || lower.endsWith('.smc')) return 'snes';
+    if (lower.endsWith('.gb')) return 'gb';
+    return null;
   }
 
   function createLibraryButton(label, action, romId) {
@@ -327,14 +337,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   romUploadInput?.addEventListener('change', async (event) => {
+    const [file] = event.target.files || [];
     const [file] = event.target.files;
     if (!file) return;
 
     console.log('[ROM] selected file:', file);
 
+    const system = detectSystemFromExtension(file.name);
     const system = loader.resolveSystemByFilename(file.name);
     if (!system) {
       setStatus('Unsupported format');
+      activeSystemLabel.textContent = 'System: None';
+      activeCoreLabel.textContent = 'Core: None';
       romUploadInput.value = '';
       return;
     }
@@ -342,29 +356,32 @@ document.addEventListener('DOMContentLoaded', () => {
     setStatus('Reading ROM...');
 
     try {
-      const [romBuffer, romDataUrl] = await Promise.all([
-        StorageManager.readFileAsArrayBuffer(file),
-        StorageManager.fileToBase64(file),
-      ]);
+      const romArrayBuffer = await file.arrayBuffer();
+      const romBytes = new Uint8Array(romArrayBuffer);
+      const loaded = await loader.loadCore(system);
 
-      const rom = {
+      if (activeCore && activeCore !== loaded.core) activeCore.stop();
+      activeCore = loaded.core;
+      activeSystemLabel.textContent = `System: ${loaded.systemName}`;
+      activeCoreLabel.textContent = `Core: ${loaded.config.label}`;
+      activeRomLabel.textContent = `ROM: ${file.name}`;
+
+      await activeCore.loadROM(romBytes);
+      activeCore.setInput(controllerState);
+      activeCore.start();
+
+      setCanvasAspectRatio(system);
+      setGameMode(true);
+
+      activeRom = {
         id: `${file.name}-${file.size}-${file.lastModified}`,
         name: file.name,
         system,
-        systemLabel: EmulatorLoader.listSystems()[system].systemName,
-        size: file.size,
-        data: romDataUrl,
-        boxArt: '',
-        lastPlayed: new Date().toISOString(),
-        addedAt: new Date().toISOString(),
       };
-
-      library = storage.upsertRom(rom);
-      renderLibrary();
-      await startRom(rom, romBuffer);
     } catch (error) {
-      console.error('[ROM] failed to process upload', error);
-      setStatus(`Failed to read ${file.name}`);
+      console.error('[ROM] failed to boot', error);
+      setStatus(`Failed - ${file.name}`);
+      setGameMode(false);
     } finally {
       romUploadInput.value = '';
     }
