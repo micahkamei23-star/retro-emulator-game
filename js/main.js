@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
 let loaderFailsafeTimer = null;
 
 function getLoadingScreen() {
@@ -336,6 +337,8 @@ document.addEventListener('DOMContentLoaded', () => {
     await exitFullscreenMode();
   }
 
+  async function bootRomFromFile(file) {
+    const system = detectSystemFromExtension(file.name);
   romUploadInput?.addEventListener('change', async (event) => {
     const [file] = event.target.files || [];
     const [file] = event.target.files;
@@ -353,9 +356,40 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    const romArrayBuffer = await file.arrayBuffer();
+    const romBytes = new Uint8Array(romArrayBuffer);
+    const loaded = await loader.loadCore(system);
+
+    if (activeCore && activeCore !== loaded.core) activeCore.stop();
+    activeCore = loaded.core;
+
+    activeSystemLabel.textContent = `System: ${loaded.systemName}`;
+    activeCoreLabel.textContent = `Core: ${loaded.config.label}`;
+    activeRomLabel.textContent = `ROM: ${file.name}`;
+
+    await activeCore.loadROM(romBytes);
+    activeCore.setInput(controllerState);
+    activeCore.start();
+
+    setCanvasAspectRatio(system);
+    setGameMode(true);
+
+    activeRom = {
+      id: `${file.name}-${file.size}-${file.lastModified}`,
+      name: file.name,
+      system,
+    };
+  }
+
+  romUploadInput?.addEventListener('change', async (event) => {
+    const [file] = event.target.files || [];
+    if (!file) return;
+
+    console.log('[ROM] selected file:', file);
     setStatus('Reading ROM...');
 
     try {
+      await bootRomFromFile(file);
       const romArrayBuffer = await file.arrayBuffer();
       const romBytes = new Uint8Array(romArrayBuffer);
       const loaded = await loader.loadCore(system);
