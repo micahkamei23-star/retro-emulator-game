@@ -101,6 +101,7 @@ class Controller {
     }
     }
     }
+    }
     this.activeTouchCountByControl.set(control, next);
     if (previous === 0) {
       this.setPressedVisual(control, true);

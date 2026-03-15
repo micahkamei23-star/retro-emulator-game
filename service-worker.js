@@ -47,6 +47,10 @@ const CORE_ASSETS = [
 async function cacheAssets(cache, assets) {
   await Promise.allSettled(assets.map(async (asset) => {
     try {
+      const response = await fetch(asset, { cache: 'no-store' });
+      if (response.ok) await cache.put(asset, response);
+    } catch (_error) {
+      // Optional emulator core may be absent in development/deploy.
       const response = await fetch(asset);
       if (response.ok) await cache.put(asset, response);
     } catch (_error) {
@@ -63,6 +67,8 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
+});
+
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
@@ -99,6 +105,8 @@ self.addEventListener('activate', (event) => {
     const clients = await self.clients.matchAll({ type: 'window' });
     clients.forEach((client) => client.postMessage({ type: 'SW_UPDATED', version: SW_VERSION }));
   })());
+});
+
 });
 
     await Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)));

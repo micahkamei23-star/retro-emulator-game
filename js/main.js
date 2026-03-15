@@ -2,6 +2,27 @@ import EmulatorLoader from './emulator-loader.js';
 import Controller from './controller.js';
 import StorageManager from './storage.js';
 
+console.log('main.js loaded');
+
+window.onerror = function (message, source, lineno, colno, error) {
+  alert(`JS ERROR: ${message} at line ${lineno}`);
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('Retro Emulator loaded');
+
+  const boot = document.getElementById('bootOverlay');
+  setTimeout(() => {
+    if (boot) boot.remove();
+  }, 2000);
+
+  try {
+    initApp();
+  } catch (e) {
+    console.error('Initialization failed:', e);
+  }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Retro Emulator loaded');
   initApp();
