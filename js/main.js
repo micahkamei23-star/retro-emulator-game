@@ -71,6 +71,33 @@ document.addEventListener('DOMContentLoaded', () => {
   hideLoader();
   document.querySelector('.app-shell')?.classList.add('ui-visible');
   scheduleBootOverlayRemoval();
+function getBootScreenElement() {
+  const bootTextElement = Array.from(document.querySelectorAll('.boot-text')).find((element) => {
+    return (element.textContent || '').includes('Powering handheld system...');
+  });
+
+  if (bootTextElement) {
+    return bootTextElement.closest('#bootOverlay') || bootTextElement.parentElement || bootTextElement;
+  }
+
+  return document.getElementById('bootOverlay');
+}
+
+function forceRemoveBootScreen() {
+  const bootScreenElement = getBootScreenElement();
+  if (!bootScreenElement) return;
+
+  bootScreenElement.style.pointerEvents = 'none';
+  bootScreenElement.style.opacity = '0';
+  setTimeout(() => {
+    bootScreenElement.remove();
+  }, 1000);
+}
+
+document.addEventListener('DOMContentLoaded', forceRemoveBootScreen);
+
+document.addEventListener('DOMContentLoaded', () => {
+  hideLoader();
 
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
