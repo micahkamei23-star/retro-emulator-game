@@ -90,6 +90,7 @@ body {
 .action-btn,
 .touch-btn,
 .file-input-label {
+  cursor: pointer;
   border: none;
   border-radius: 999px;
   padding: 0.5rem 0.9rem;
@@ -166,4 +167,17 @@ body {
 @media (max-width: 900px) {
   .console-body { grid-template-columns: 1fr; }
   .controls-section { flex-direction: column; align-items: center; }
+}
+
+
+.touch-btn {
+  touch-action: none;
+  user-select: none;
+}
+
+
+button:focus-visible,
+.file-input-label:focus-visible {
+  outline: 2px solid var(--neon);
+  outline-offset: 2px;
 }

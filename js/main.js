@@ -18,6 +18,19 @@ let library = storage.getLibrary();
 let activeRom = null;
 const player = { x: 40, y: 40, speed: 4, color: '#00f5d4' };
 
+function setStatus(message) {
+  activeRomLabel.textContent = `ROM: ${message}`;
+}
+
+function createLibraryButton(label, action, romId) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.textContent = label;
+  button.dataset.action = action;
+  button.dataset.id = romId;
+  return button;
+}
+
 new Controller(({ control, pressed }) => {
   if (!pressed) return;
   if (control === 'left') player.x -= player.speed;
@@ -38,28 +51,39 @@ function renderFrame() {
       if ((i + j) % 64 === 0) ctx.fillRect(i, j, 32, 32);
     }
   }
+
   ctx.fillStyle = player.color;
   ctx.fillRect(player.x, player.y, 32, 32);
   ctx.fillStyle = '#f15bb5';
   ctx.font = '16px monospace';
-  ctx.fillText(activeRom ? activeRom.name : 'Upload a ROM to start', 16, 24);
+  const promptText = activeRom ? `${activeRom.name} • ${activeRom.systemLabel}` : 'Upload a ROM to start';
+  ctx.fillText(promptText, 16, 24);
 }
 
 function renderLibrary() {
   libraryList.innerHTML = '';
   if (!library.length) {
-    libraryList.innerHTML = '<li>No ROMs uploaded yet.</li>';
+    const emptyItem = document.createElement('li');
+    emptyItem.textContent = 'No ROMs uploaded yet.';
+    libraryList.appendChild(emptyItem);
     return;
   }
 
   library.forEach((rom) => {
     const item = document.createElement('li');
     item.className = 'library-item';
-    item.innerHTML = `
-      <span>${rom.name}<br/><small>${rom.systemLabel}</small></span>
-      <button data-action="play" data-id="${rom.id}">Play</button>
-      <button data-action="delete" data-id="${rom.id}">Delete</button>
-    `;
+
+    const meta = document.createElement('span');
+    const title = document.createElement('strong');
+    title.textContent = rom.name;
+    const details = document.createElement('small');
+    details.textContent = `${rom.systemLabel} • ${(rom.size / 1024).toFixed(1)} KB`;
+    meta.append(title, document.createElement('br'), details);
+
+    const playButton = createLibraryButton('Play', 'play', rom.id);
+    const deleteButton = createLibraryButton('Delete', 'delete', rom.id);
+
+    item.append(meta, playButton, deleteButton);
     libraryList.appendChild(item);
   });
 }
@@ -67,8 +91,16 @@ function renderLibrary() {
 async function startRom(rom) {
   activeRom = rom;
   const loaded = await loader.loadCore(rom.system);
-  activeCoreLabel.textContent = `Core: ${loaded.config.label} (${loaded.type})`;
-  activeRomLabel.textContent = `ROM: ${rom.name}`;
+
+  if (loaded.type === 'mock') {
+    activeCoreLabel.textContent = `Core: ${loaded.config.label} (mock)`;
+    setStatus(`${rom.name} (core unavailable, demo mode)`);
+  } else {
+    activeCoreLabel.textContent = `Core: ${loaded.config.label} (wasm)`;
+    setStatus(rom.name);
+  }
+
+  storage.touchRom(rom.id);
   renderFrame();
 }
 
@@ -78,9 +110,12 @@ romInput.addEventListener('change', async (event) => {
 
   const system = loader.resolveSystemByFilename(file.name);
   if (!system) {
-    alert('Unsupported ROM format. Use NES, SNES, GB, or GBA ROM files.');
+    setStatus('Unsupported format');
     return;
   }
+
+  setStatus('Reading ROM...');
+  const romData = await StorageManager.fileToBase64(file);
 
   const rom = {
     id: `${file.name}-${file.size}-${file.lastModified}`,
@@ -88,25 +123,28 @@ romInput.addEventListener('change', async (event) => {
     system,
     systemLabel: EmulatorLoader.listSystems()[system].label,
     size: file.size,
+    data: romData,
     lastPlayed: new Date().toISOString(),
+    addedAt: new Date().toISOString(),
   };
 
   library = storage.upsertRom(rom);
   renderLibrary();
   await startRom(rom);
+  romInput.value = '';
 });
 
 libraryList.addEventListener('click', async (event) => {
   const button = event.target.closest('button');
   if (!button) return;
-  const romId = button.dataset.id;
 
+  const romId = button.dataset.id;
   if (button.dataset.action === 'delete') {
     library = storage.deleteRom(romId);
     if (activeRom?.id === romId) {
       activeRom = null;
       activeCoreLabel.textContent = 'Core: None';
-      activeRomLabel.textContent = 'ROM: None';
+      setStatus('None');
     }
     renderLibrary();
     renderFrame();
@@ -114,30 +152,51 @@ libraryList.addEventListener('click', async (event) => {
   }
 
   const rom = library.find((entry) => entry.id === romId);
-  if (rom) await startRom(rom);
+  if (rom) {
+    await startRom(rom);
+  }
 });
 
 saveStateBtn.addEventListener('click', () => {
-  if (!activeRom) return alert('Load a ROM first.');
-  storage.saveState(activeRom.id, { player });
+  if (!activeRom) {
+    setStatus('Load a ROM first');
+    return;
+  }
+  storage.saveState(activeRom.id, { player, romName: activeRom.name });
+  setStatus(`Saved state for ${activeRom.name}`);
 });
 
 loadStateBtn.addEventListener('click', () => {
-  if (!activeRom) return alert('Load a ROM first.');
+  if (!activeRom) {
+    setStatus('Load a ROM first');
+    return;
+  }
+
   const state = storage.loadState(activeRom.id);
-  if (!state) return alert('No saved state found.');
+  if (!state) {
+    setStatus('No save state found');
+    return;
+  }
+
   Object.assign(player, state.player || {});
   renderFrame();
+  setStatus(`Loaded state for ${activeRom.name}`);
 });
 
 clearStateBtn.addEventListener('click', () => {
-  if (!activeRom) return alert('Load a ROM first.');
+  if (!activeRom) {
+    setStatus('Load a ROM first');
+    return;
+  }
+
   storage.clearState(activeRom.id);
+  setStatus(`Cleared state for ${activeRom.name}`);
 });
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js'));
 }
 
+library = storage.sortLibraryByRecentPlay(library);
 renderLibrary();
 renderFrame();

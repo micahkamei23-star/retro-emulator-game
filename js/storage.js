@@ -2,6 +2,15 @@ const ROM_LIBRARY_KEY = 'retro-rom-library-v1';
 const SAVE_STATE_KEY = 'retro-save-states-v1';
 
 class StorageManager {
+  static fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('Failed to read ROM file.'));
+      reader.readAsDataURL(file);
+    });
+  }
+
   getLibrary() {
     return JSON.parse(localStorage.getItem(ROM_LIBRARY_KEY) || '[]');
   }
@@ -10,21 +19,40 @@ class StorageManager {
     localStorage.setItem(ROM_LIBRARY_KEY, JSON.stringify(library));
   }
 
+  sortLibraryByRecentPlay(library) {
+    return [...library].sort((a, b) => new Date(b.lastPlayed || 0) - new Date(a.lastPlayed || 0));
+  }
+
   upsertRom(rom) {
     const library = this.getLibrary();
     const existingIndex = library.findIndex((entry) => entry.id === rom.id);
+    const nextLibrary = [...library];
+
     if (existingIndex >= 0) {
-      library[existingIndex] = rom;
+      nextLibrary[existingIndex] = { ...nextLibrary[existingIndex], ...rom };
     } else {
-      library.push(rom);
+      nextLibrary.push(rom);
     }
-    this.saveLibrary(library);
-    return library;
+
+    const sorted = this.sortLibraryByRecentPlay(nextLibrary);
+    this.saveLibrary(sorted);
+    return sorted;
+  }
+
+  touchRom(id) {
+    const library = this.getLibrary();
+    const nextLibrary = library.map((entry) => (entry.id === id
+      ? { ...entry, lastPlayed: new Date().toISOString() }
+      : entry));
+    const sorted = this.sortLibraryByRecentPlay(nextLibrary);
+    this.saveLibrary(sorted);
+    return sorted;
   }
 
   deleteRom(id) {
     const next = this.getLibrary().filter((entry) => entry.id !== id);
     this.saveLibrary(next);
+    this.clearState(id);
     return next;
   }
 
