@@ -69,6 +69,8 @@ self.addEventListener('install', (event) => {
 
 });
 
+});
+
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
@@ -105,6 +107,8 @@ self.addEventListener('activate', (event) => {
     const clients = await self.clients.matchAll({ type: 'window' });
     clients.forEach((client) => client.postMessage({ type: 'SW_UPDATED', version: SW_VERSION }));
   })());
+});
+
 });
 
 });

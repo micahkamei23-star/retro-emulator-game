@@ -2,6 +2,24 @@ import EmulatorLoader from './emulator-loader.js';
 import Controller from './controller.js';
 import StorageManager from './storage.js';
 
+const bootOverlay = document.getElementById('bootOverlay');
+if (bootOverlay) {
+  bootOverlay.remove();
+}
+
+setTimeout(() => {
+  const boot = document.getElementById('bootOverlay');
+  if (boot) boot.remove();
+}, 500);
+
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    initApp();
+  } catch (error) {
+    console.error('Initialization failed:', error);
+  }
+});
+
 console.log('main.js loaded');
 
 window.onerror = function (message, source, lineno, colno, error) {
@@ -152,6 +170,9 @@ function createLibraryButton(label, action, romId) {
   return button;
 }
 
+function initApp() {
+  renderLibrary();
+  drawBootScreen();
 function playStartupSound() {
   if (!startupSoundToggle?.checked) return;
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
