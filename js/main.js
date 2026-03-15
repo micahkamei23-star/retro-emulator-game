@@ -54,6 +54,23 @@ window.hideLoader = hideLoader;
 
 showLoader();
 
+function scheduleBootOverlayRemoval() {
+  const bootOverlay = document.getElementById('bootOverlay');
+  if (!bootOverlay) return;
+
+  bootOverlay.style.pointerEvents = 'none';
+  bootOverlay.style.opacity = '0';
+  bootOverlay.style.transition = 'opacity 0.35s ease';
+
+  setTimeout(() => {
+    bootOverlay.remove();
+  }, 1000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  hideLoader();
+  document.querySelector('.app-shell')?.classList.add('ui-visible');
+  scheduleBootOverlayRemoval();
 function getBootScreenElement() {
   const bootTextElement = Array.from(document.querySelectorAll('.boot-text')).find((element) => {
     return (element.textContent || '').includes('Powering handheld system...');
