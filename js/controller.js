@@ -39,6 +39,35 @@ class Controller {
       return;
     }
 
+
+  emit(control, pressed, source) {
+    if (this.state.get(control) === pressed) return;
+    this.state.set(control, pressed);
+    this.onInput({ control, pressed, source });
+  }
+
+  vibrate(duration = 12) {
+    if (navigator.vibrate) navigator.vibrate(duration);
+  }
+
+  setPressedVisual(control, pressed) {
+    const elements = this.controlElements.get(control) || [];
+    elements.forEach((element) => {
+      element.classList.toggle('is-pressed', pressed);
+    });
+  }
+
+  updateControlTouchCount(control, delta) {
+    const previous = this.activeTouchCountByControl.get(control) || 0;
+    const next = Math.max(0, previous + delta);
+
+    if (next === 0) {
+      this.activeTouchCountByControl.delete(control);
+      this.setPressedVisual(control, false);
+      this.emit(control, false, 'touch');
+      return;
+    }
+
     this.activeTouchCountByControl.set(control, next);
     if (previous === 0) {
       this.setPressedVisual(control, true);
@@ -55,6 +84,11 @@ class Controller {
     const target = document.elementFromPoint(touch.clientX, touch.clientY);
     return this.getControlFromElement(target);
   }
+
+  assignTouchToControl(touchId, control, { vibrate = false } = {}) {
+    const previousControl = this.touchToControl.get(touchId);
+    if (previousControl === control) return;
+
 
   assignTouchToControl(touchId, control, { vibrate = false } = {}) {
     const previousControl = this.touchToControl.get(touchId);
@@ -119,6 +153,15 @@ class Controller {
       button.addEventListener('pointercancel', releasePointer, { passive: false });
       button.addEventListener('pointerleave', releasePointer, { passive: false });
     });
+
+    document.addEventListener('touchstart', (event) => {
+      event.preventDefault();
+
+      for (const touch of event.changedTouches) {
+        const control = this.getControlFromTouchPoint(touch);
+        this.assignTouchToControl(touch.identifier, control, { vibrate: Boolean(control) });
+      }
+    }, { passive: false });
 
     document.addEventListener('touchmove', (event) => {
       if (!this.touchToControl.size) return;
