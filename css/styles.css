@@ -1,0 +1,183 @@
+:root {
+  --bg: #0a0a12;
+  --panel: #1f1b2e;
+  --panel-2: #2a2340;
+  --neon: #00f5d4;
+  --accent: #f15bb5;
+  --text: #f7f7ff;
+  --warning: #ff595e;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 20% 20%, #3a0ca3 0%, transparent 40%),
+    radial-gradient(circle at 80% 30%, #7209b7 0%, transparent 35%),
+    var(--bg);
+  padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+}
+
+.app-shell {
+  max-width: 1080px;
+  margin: 0 auto;
+  border: 3px solid var(--neon);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(25, 21, 41, 0.9), rgba(10, 10, 18, 0.95));
+  box-shadow: 0 0 25px rgba(0, 245, 212, 0.35);
+  overflow: hidden;
+}
+
+.console-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(247, 247, 255, 0.25);
+}
+
+.console-header h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  letter-spacing: 1px;
+}
+
+.subtitle {
+  margin: 0.3rem 0 0;
+  opacity: 0.8;
+}
+
+.console-body {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.screen-panel,
+.library-panel {
+  background: var(--panel);
+  border-radius: 12px;
+  border: 2px solid rgba(0, 245, 212, 0.2);
+  padding: 0.9rem;
+}
+
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 0.6rem;
+}
+
+#gameCanvas {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  background: #050505;
+  border: 2px solid rgba(241, 91, 181, 0.6);
+  border-radius: 8px;
+  image-rendering: pixelated;
+}
+
+.game-actions {
+  margin-top: 0.8rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.action-btn,
+.touch-btn,
+.file-input-label {
+  cursor: pointer;
+  border: none;
+  border-radius: 999px;
+  padding: 0.5rem 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid rgba(247, 247, 255, 0.25);
+}
+
+.action-btn:hover,
+.touch-btn:active,
+.file-input-label:hover {
+  background: #3a2d61;
+}
+
+.warning { border-color: var(--warning); }
+
+#romInput { display: none; }
+
+.library-list {
+  margin: 0.8rem 0 0;
+  padding: 0;
+  list-style: none;
+  max-height: 380px;
+  overflow: auto;
+}
+
+.library-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.4rem;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.45rem;
+  border-radius: 8px;
+  margin-bottom: 0.35rem;
+}
+
+.library-item button {
+  border: none;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: #34285a;
+  color: var(--text);
+}
+
+.controls-section {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  gap: 0.8rem;
+  border-top: 1px solid rgba(247, 247, 255, 0.2);
+}
+
+.dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 64px);
+  grid-template-rows: repeat(3, 52px);
+  gap: 0.4rem;
+}
+
+.dpad-up { grid-area: 1 / 2; }
+.dpad-left { grid-area: 2 / 1; }
+.dpad-right { grid-area: 2 / 3; }
+.dpad-down { grid-area: 3 / 2; }
+
+.action-cluster {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(64px, 76px));
+  gap: 0.4rem;
+  align-content: center;
+}
+
+@media (max-width: 900px) {
+  .console-body { grid-template-columns: 1fr; }
+  .controls-section { flex-direction: column; align-items: center; }
+}
+
+
+.touch-btn {
+  touch-action: none;
+  user-select: none;
+}
+
+
+button:focus-visible,
+.file-input-label:focus-visible {
+  outline: 2px solid var(--neon);
+  outline-offset: 2px;
+}
