@@ -1,0 +1,9 @@
+{
+  "name": "Retro Emulator Game",
+  "short_name": "RetroEmu",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0a0a12",
+  "theme_color": "#231942",
+  "description": "Retro console PWA with offline emulator shell and touch controls."
+}
