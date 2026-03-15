@@ -12,7 +12,66 @@ const SYSTEM_ASPECT_RATIO = {
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+let loaderFailsafeTimer = null;
+
+function getLoadingScreen() {
+  return document.getElementById('loading-screen');
+}
+
+function showLoader() {
+  if (loaderFailsafeTimer) clearTimeout(loaderFailsafeTimer);
+
+  const loadingScreen = getLoadingScreen();
+  if (loadingScreen) {
+    loadingScreen.hidden = false;
+    loadingScreen.style.display = 'flex';
+    loadingScreen.style.opacity = '1';
+    loadingScreen.style.pointerEvents = 'auto';
+  }
+
+  loaderFailsafeTimer = setTimeout(() => {
+    hideLoader();
+  }, 3000);
+}
+
+function hideLoader() {
+  if (loaderFailsafeTimer) {
+    clearTimeout(loaderFailsafeTimer);
+    loaderFailsafeTimer = null;
+  }
+
+  const loadingScreen = getLoadingScreen();
+  if (!loadingScreen) return;
+
+  loadingScreen.style.opacity = '0';
+  loadingScreen.style.pointerEvents = 'none';
+  loadingScreen.hidden = true;
+  loadingScreen.style.display = 'none';
+}
+
+window.showLoader = showLoader;
+window.hideLoader = hideLoader;
+
+showLoader();
+
+function scheduleBootOverlayRemoval() {
+  const bootOverlay = document.getElementById('bootOverlay');
+  if (!bootOverlay) return;
+
+  bootOverlay.style.pointerEvents = 'none';
+  bootOverlay.style.opacity = '0';
+  bootOverlay.style.transition = 'opacity 0.35s ease';
+
+  setTimeout(() => {
+    bootOverlay.remove();
+  }, 1000);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  hideLoader();
+  document.querySelector('.app-shell')?.classList.add('ui-visible');
+  scheduleBootOverlayRemoval();
+
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
   const romUploadInput = document.getElementById('rom-upload');
