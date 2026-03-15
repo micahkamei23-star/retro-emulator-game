@@ -9,10 +9,19 @@
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
+  <div id="bootOverlay" class="boot-overlay" aria-live="polite">
+    <div class="boot-logo">RETRO EMULATOR</div>
+    <div class="boot-dots" aria-hidden="true">
+      <span></span><span></span><span></span>
+    </div>
+    <p class="boot-text">Powering handheld system...</p>
+  </div>
+
   <div class="app-shell">
     <header class="console-header">
       <h1>Retro Emulator Game</h1>
       <p class="subtitle">Offline-ready handheld console</p>
+      <label class="sound-toggle"><input id="startupSoundToggle" type="checkbox" /> Startup sound</label>
     </header>
 
     <main class="console-body">
@@ -21,6 +30,18 @@
           <span id="activeCore">Core: None</span>
           <span id="activeRom">ROM: None</span>
         </div>
+
+        <div class="screen-frame">
+          <canvas id="gameCanvas" width="640" height="480" aria-label="Emulator screen"></canvas>
+          <div class="scanlines" aria-hidden="true"></div>
+          <div class="screen-glow" aria-hidden="true"></div>
+          <div id="cartridgeOverlay" class="cartridge-overlay" aria-hidden="true">
+            <div class="cartridge-slot"></div>
+            <div class="cartridge-body"></div>
+            <p id="cartridgeLabel" class="cartridge-label">INSERTING CARTRIDGE...</p>
+          </div>
+        </div>
+
         <canvas id="gameCanvas" width="640" height="480" aria-label="Emulator screen"></canvas>
         <div class="game-actions">
           <button id="saveStateBtn" class="action-btn">Save State</button>
@@ -32,6 +53,7 @@
       <aside class="library-panel">
         <h2>Game Library</h2>
         <label for="romInput" class="file-input-label">Upload ROM</label>
+        <input id="romInput" type="file" accept=".nes,.smc,.sfc,.gb,.gbc,.gba" />
         <input id="romInput" type="file" accept=".nes,.smc,.sfc,.gb,.gba" />
         <ul id="libraryList" class="library-list" aria-live="polite"></ul>
       </aside>

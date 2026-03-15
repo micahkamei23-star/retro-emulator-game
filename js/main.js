@@ -11,6 +11,11 @@ const activeRomLabel = document.getElementById('activeRom');
 const saveStateBtn = document.getElementById('saveStateBtn');
 const loadStateBtn = document.getElementById('loadStateBtn');
 const clearStateBtn = document.getElementById('clearStateBtn');
+const appShell = document.querySelector('.app-shell');
+const bootOverlay = document.getElementById('bootOverlay');
+const cartridgeOverlay = document.getElementById('cartridgeOverlay');
+const cartridgeLabel = document.getElementById('cartridgeLabel');
+const startupSoundToggle = document.getElementById('startupSoundToggle');
 
 const loader = new EmulatorLoader(canvas);
 const storage = new StorageManager();
@@ -18,6 +23,7 @@ const controllerState = {};
 let library = storage.sortLibraryByRecentPlay(storage.getLibrary());
 let activeRom = null;
 let activeCore = null;
+let isLaunchingRom = false;
 
 new Controller(({ control, pressed }) => {
   controllerState[control] = pressed;
@@ -25,6 +31,10 @@ new Controller(({ control, pressed }) => {
     activeCore.setInput(controllerState);
   }
 });
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 function setStatus(message) {
   activeRomLabel.textContent = `ROM: ${message}`;
@@ -34,6 +44,10 @@ function drawBootScreen(message = 'Upload a ROM to start') {
   ctx.fillStyle = '#090909';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = '#00f5d4';
+  ctx.font = '20px "Press Start 2P", monospace';
+  ctx.fillText('RETRO EMULATOR', 20, 40);
+  ctx.fillStyle = '#f15bb5';
+  ctx.font = '14px "Press Start 2P", monospace';
   ctx.font = '20px monospace';
   ctx.fillText('RETRO EMULATOR', 20, 40);
   ctx.fillStyle = '#f15bb5';
@@ -48,6 +62,46 @@ function createLibraryButton(label, action, romId) {
   button.dataset.action = action;
   button.dataset.id = romId;
   return button;
+}
+
+function playStartupSound() {
+  if (!startupSoundToggle?.checked) return;
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtx) return;
+
+  const audioContext = new AudioCtx();
+  const now = audioContext.currentTime;
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+
+  oscillator.type = 'square';
+  oscillator.frequency.setValueAtTime(220, now);
+  oscillator.frequency.linearRampToValueAtTime(420, now + 0.25);
+  oscillator.frequency.linearRampToValueAtTime(520, now + 0.45);
+
+  gainNode.gain.setValueAtTime(0.0001, now);
+  gainNode.gain.exponentialRampToValueAtTime(0.08, now + 0.04);
+  gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
+
+  oscillator.connect(gainNode).connect(audioContext.destination);
+  oscillator.start(now);
+  oscillator.stop(now + 0.58);
+}
+
+async function runStartupSequence() {
+  playStartupSound();
+  await wait(1700);
+  bootOverlay.classList.add('fade-out');
+  appShell.classList.add('ui-visible');
+  await wait(700);
+  bootOverlay.style.display = 'none';
+}
+
+async function playCartridgeInsert(romName) {
+  cartridgeLabel.textContent = `INSERTING ${romName.toUpperCase()}...`;
+  cartridgeOverlay.classList.add('is-active');
+  await wait(1050);
+  cartridgeOverlay.classList.remove('is-active');
 }
 
 function renderLibrary() {
@@ -78,6 +132,14 @@ function renderLibrary() {
 }
 
 async function startRom(rom) {
+  if (isLaunchingRom) return;
+  isLaunchingRom = true;
+
+  try {
+    setStatus('Loading core...');
+    await playCartridgeInsert(rom.name.replace(/\.[^/.]+$/, ''));
+
+    const loaded = await loader.loadCore(rom.system);
   try {
     setStatus('Loading core...');
     const loaded = await loader.loadCore(rom.system);
@@ -102,6 +164,8 @@ async function startRom(rom) {
     console.error(error);
     drawBootScreen('Core failed to load. Check /cores assets.');
     setStatus(`Failed - ${rom.name}`);
+  } finally {
+    isLaunchingRom = false;
   }
 }
 
@@ -199,6 +263,15 @@ clearStateBtn.addEventListener('click', () => {
   setStatus(`Cleared state for ${activeRom.name}`);
 });
 
+const blockTouchDefaults = (event) => event.preventDefault();
+['touchstart', 'touchend', 'touchmove'].forEach((eventName) => {
+  canvas.addEventListener(eventName, blockTouchDefaults, { passive: false });
+});
+
+[canvas, document.body].forEach((element) => {
+  element.addEventListener('contextmenu', (event) => event.preventDefault());
+});
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js'));
 }
@@ -206,3 +279,4 @@ if ('serviceWorker' in navigator) {
 window.addEventListener('beforeunload', () => loader.unloadAll());
 renderLibrary();
 drawBootScreen();
+runStartupSequence();

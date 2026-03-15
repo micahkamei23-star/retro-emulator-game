@@ -15,22 +15,32 @@ class Controller {
 
   bindTouchControls() {
     const buttons = document.querySelectorAll('[data-control]');
+
     buttons.forEach((button) => {
       const control = button.dataset.control;
 
-      button.addEventListener('pointerdown', (event) => {
+      const press = (event) => {
         event.preventDefault();
+        button.classList.add('is-pressed');
         this.emit(control, true, 'touch');
-      });
+      };
 
       const release = (event) => {
         event.preventDefault();
+        button.classList.remove('is-pressed');
         this.emit(control, false, 'touch');
       };
 
+      button.addEventListener('touchstart', press, { passive: false });
+      button.addEventListener('touchend', release, { passive: false });
+      button.addEventListener('touchcancel', release, { passive: false });
+      button.addEventListener('touchmove', (event) => event.preventDefault(), { passive: false });
+
+      button.addEventListener('pointerdown', press);
       button.addEventListener('pointerup', release);
       button.addEventListener('pointercancel', release);
       button.addEventListener('pointerleave', release);
+      button.addEventListener('contextmenu', (event) => event.preventDefault());
     });
   }
 
