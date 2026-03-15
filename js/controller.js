@@ -13,11 +13,66 @@ class Controller {
     this.onInput({ control, pressed, source });
   }
 
+  vibrate(duration = 12) {
+    if (navigator.vibrate) navigator.vibrate(duration);
+  }
+
   bindTouchControls() {
     const buttons = document.querySelectorAll('[data-control]');
 
     buttons.forEach((button) => {
       const control = button.dataset.control;
+      let pressedByTouch = false;
+      let pressedByPointer = false;
+
+      const setPressed = (pressed, source) => {
+        if (pressed) {
+          button.classList.add('is-pressed');
+          this.emit(control, true, source);
+        } else {
+          button.classList.remove('is-pressed');
+          this.emit(control, false, source);
+        }
+      };
+
+      const pressTouch = (event) => {
+        event.preventDefault();
+        if (pressedByTouch) return;
+        pressedByTouch = true;
+        this.vibrate();
+        setPressed(true, 'touch');
+      };
+
+      const releaseTouch = (event) => {
+        event.preventDefault();
+        if (!pressedByTouch) return;
+        pressedByTouch = false;
+        setPressed(false, 'touch');
+      };
+
+      const pressPointer = (event) => {
+        event.preventDefault();
+        if (pressedByPointer || event.pointerType === 'touch') return;
+        pressedByPointer = true;
+        setPressed(true, 'pointer');
+      };
+
+      const releasePointer = (event) => {
+        event.preventDefault();
+        if (!pressedByPointer || event.pointerType === 'touch') return;
+        pressedByPointer = false;
+        setPressed(false, 'pointer');
+      };
+
+      button.addEventListener('touchstart', pressTouch, { passive: false });
+      button.addEventListener('touchend', releaseTouch, { passive: false });
+      button.addEventListener('touchcancel', releaseTouch, { passive: false });
+      button.addEventListener('touchmove', (event) => event.preventDefault(), { passive: false });
+
+      button.addEventListener('pointerdown', pressPointer, { passive: false });
+      button.addEventListener('pointerup', releasePointer, { passive: false });
+      button.addEventListener('pointercancel', releasePointer, { passive: false });
+      button.addEventListener('pointerleave', releasePointer, { passive: false });
 
       const press = (event) => {
         event.preventDefault();

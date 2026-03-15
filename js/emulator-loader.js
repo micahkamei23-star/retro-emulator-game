@@ -5,18 +5,21 @@ import WasmCore from './emulators/wasm-core.js';
 const CORE_CONFIG = {
   nes: {
     label: 'NES (jsnes)',
+    systemName: 'NES',
     extensions: ['.nes'],
     createCore: (canvas) => new NESCore(canvas),
     assets: ['./cores/jsnes/jsnes.min.js'],
   },
   gb: {
     label: 'Game Boy / Color (GameBoy.js)',
+    systemName: 'Game Boy',
     extensions: ['.gb', '.gbc'],
     createCore: (canvas) => new GameBoyCore(canvas),
     assets: ['./cores/gameboy/gameboy.min.js'],
   },
   gba: {
     label: 'Game Boy Advance (mGBA WASM)',
+    systemName: 'Game Boy Advance',
     extensions: ['.gba'],
     createCore: (canvas) => new WasmCore(canvas, {
       label: 'mGBA',
@@ -28,6 +31,7 @@ const CORE_CONFIG = {
   },
   snes: {
     label: 'SNES (Snes9x WASM)',
+    systemName: 'SNES',
     extensions: ['.sfc', '.smc'],
     createCore: (canvas) => new WasmCore(canvas, {
       label: 'Snes9x',
@@ -61,6 +65,13 @@ class EmulatorLoader {
 
   async loadCore(system) {
     const config = CORE_CONFIG[system];
+    if (!config) throw new Error(`Unsupported system: ${system}`);
+
+    if (this.cores.has(system)) return this.cores.get(system);
+
+    const core = config.createCore(this.canvas);
+    await core.init();
+    const loaded = { type: 'native', core, config, systemName: config.systemName };
     if (!config) {
       throw new Error(`Unsupported system: ${system}`);
     }

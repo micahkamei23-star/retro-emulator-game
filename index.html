@@ -27,6 +27,7 @@
     <main class="console-body">
       <section class="screen-panel">
         <div class="status-row">
+          <span id="activeSystem">System: None</span>
           <span id="activeCore">Core: None</span>
           <span id="activeRom">ROM: None</span>
         </div>
@@ -40,6 +41,9 @@
             <div class="cartridge-body"></div>
             <p id="cartridgeLabel" class="cartridge-label">INSERTING CARTRIDGE...</p>
           </div>
+          <button id="exitFullscreenOverlay" class="exit-overlay" type="button" hidden>Tap to exit game</button>
+        </div>
+
         </div>
 
         <canvas id="gameCanvas" width="640" height="480" aria-label="Emulator screen"></canvas>
@@ -54,6 +58,7 @@
         <h2>Game Library</h2>
         <label for="romInput" class="file-input-label">Upload ROM</label>
         <input id="romInput" type="file" accept=".nes,.smc,.sfc,.gb,.gbc,.gba" />
+        <ol id="recentList" class="recent-list" aria-label="Recently played games"></ol>
         <input id="romInput" type="file" accept=".nes,.smc,.sfc,.gb,.gba" />
         <ul id="libraryList" class="library-list" aria-live="polite"></ul>
       </aside>

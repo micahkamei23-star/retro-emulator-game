@@ -6,6 +6,8 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const romInput = document.getElementById('romInput');
 const libraryList = document.getElementById('libraryList');
+const recentList = document.getElementById('recentList');
+const activeSystemLabel = document.getElementById('activeSystem');
 const activeCoreLabel = document.getElementById('activeCore');
 const activeRomLabel = document.getElementById('activeRom');
 const saveStateBtn = document.getElementById('saveStateBtn');
@@ -16,6 +18,7 @@ const bootOverlay = document.getElementById('bootOverlay');
 const cartridgeOverlay = document.getElementById('cartridgeOverlay');
 const cartridgeLabel = document.getElementById('cartridgeLabel');
 const startupSoundToggle = document.getElementById('startupSoundToggle');
+const exitFullscreenOverlay = document.getElementById('exitFullscreenOverlay');
 
 const loader = new EmulatorLoader(canvas);
 const storage = new StorageManager();
@@ -27,6 +30,15 @@ let isLaunchingRom = false;
 
 new Controller(({ control, pressed }) => {
   controllerState[control] = pressed;
+  if (activeCore) activeCore.setInput(controllerState);
+});
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const setStatus = (message) => { activeRomLabel.textContent = `ROM: ${message}`; };
+
+function setGameMode(isActive) {
+  document.body.classList.toggle('game-active', isActive);
+  exitFullscreenOverlay.hidden = !isActive;
   if (activeCore) {
     activeCore.setInput(controllerState);
   }
@@ -104,6 +116,23 @@ async function playCartridgeInsert(romName) {
   cartridgeOverlay.classList.remove('is-active');
 }
 
+function renderRecentList() {
+  recentList.innerHTML = '';
+  const recents = library.slice(0, 3);
+  if (!recents.length) return;
+
+  recents.forEach((rom) => {
+    const item = document.createElement('li');
+    item.className = 'recent-pill';
+    item.textContent = `Recent: ${rom.name}`;
+    recentList.appendChild(item);
+  });
+}
+
+function renderLibrary() {
+  libraryList.innerHTML = '';
+  renderRecentList();
+
 function renderLibrary() {
   libraryList.innerHTML = '';
   if (!library.length) {
@@ -115,6 +144,20 @@ function renderLibrary() {
 
   library.forEach((rom) => {
     const item = document.createElement('li');
+    item.className = 'library-card';
+
+    const art = rom.boxArt ? document.createElement('img') : document.createElement('div');
+    art.className = rom.boxArt ? 'library-art' : 'library-art library-placeholder';
+    if (rom.boxArt) {
+      art.src = rom.boxArt;
+      art.alt = `${rom.name} cover art`;
+      art.loading = 'lazy';
+    } else {
+      art.textContent = rom.systemLabel;
+    }
+
+    const meta = document.createElement('div');
+    meta.className = 'library-meta';
     item.className = 'library-item';
 
     const meta = document.createElement('span');
@@ -122,6 +165,16 @@ function renderLibrary() {
     title.textContent = rom.name;
     const details = document.createElement('small');
     details.textContent = `${rom.systemLabel} • ${(rom.size / 1024).toFixed(1)} KB`;
+
+    const actions = document.createElement('div');
+    actions.className = 'library-actions';
+    actions.append(
+      createLibraryButton('Play', 'play', rom.id),
+      createLibraryButton('Delete', 'delete', rom.id),
+    );
+
+    meta.append(title, details, actions);
+    item.append(art, meta);
     meta.append(title, document.createElement('br'), details);
 
     const playButton = createLibraryButton('Play', 'play', rom.id);
@@ -140,6 +193,10 @@ async function startRom(rom) {
     await playCartridgeInsert(rom.name.replace(/\.[^/.]+$/, ''));
 
     const loaded = await loader.loadCore(rom.system);
+    if (activeCore && activeCore !== loaded.core) activeCore.stop();
+
+    activeCore = loaded.core;
+    activeSystemLabel.textContent = `System: ${loaded.systemName}`;
   try {
     setStatus('Loading core...');
     const loaded = await loader.loadCore(rom.system);
@@ -160,6 +217,7 @@ async function startRom(rom) {
     library = storage.touchRom(rom.id);
     renderLibrary();
     setStatus(rom.name);
+    setGameMode(true);
   } catch (error) {
     console.error(error);
     drawBootScreen('Core failed to load. Check /cores assets.');
@@ -167,6 +225,17 @@ async function startRom(rom) {
   } finally {
     isLaunchingRom = false;
   }
+}
+
+function stopGameMode() {
+  activeCore?.stop();
+  activeCore = null;
+  activeRom = null;
+  activeSystemLabel.textContent = 'System: None';
+  activeCoreLabel.textContent = 'Core: None';
+  setStatus('None');
+  drawBootScreen();
+  setGameMode(false);
 }
 
 romInput.addEventListener('change', async (event) => {
@@ -186,6 +255,7 @@ romInput.addEventListener('change', async (event) => {
     systemLabel: EmulatorLoader.listSystems()[system].label,
     size: file.size,
     data: await StorageManager.fileToBase64(file),
+    boxArt: '',
     lastPlayed: new Date().toISOString(),
     addedAt: new Date().toISOString(),
   };
@@ -203,6 +273,7 @@ libraryList.addEventListener('click', async (event) => {
   const romId = button.dataset.id;
   if (button.dataset.action === 'delete') {
     library = storage.deleteRom(romId);
+    if (activeRom?.id === romId) stopGameMode();
     if (activeRom?.id === romId) {
       activeRom = null;
       activeCore?.stop();
@@ -216,6 +287,19 @@ libraryList.addEventListener('click', async (event) => {
   }
 
   const rom = library.find((entry) => entry.id === romId);
+  if (rom) await startRom(rom);
+});
+
+exitFullscreenOverlay.addEventListener('touchstart', (event) => {
+  event.preventDefault();
+  stopGameMode();
+}, { passive: false });
+exitFullscreenOverlay.addEventListener('click', stopGameMode);
+
+saveStateBtn.addEventListener('click', () => {
+  if (!activeRom || !activeCore) return setStatus('Load a ROM first');
+  const serializedState = activeCore.serializeState();
+  if (!serializedState) return setStatus('Save state not supported by this core');
   if (rom) {
     await startRom(rom);
   }
@@ -238,6 +322,9 @@ saveStateBtn.addEventListener('click', () => {
 });
 
 loadStateBtn.addEventListener('click', () => {
+  if (!activeRom || !activeCore) return setStatus('Load a ROM first');
+  const state = storage.loadState(activeRom.id);
+  if (!state?.serializedState) return setStatus('No save state found');
   if (!activeRom || !activeCore) {
     setStatus('Load a ROM first');
     return;
@@ -254,6 +341,7 @@ loadStateBtn.addEventListener('click', () => {
 });
 
 clearStateBtn.addEventListener('click', () => {
+  if (!activeRom) return setStatus('Load a ROM first');
   if (!activeRom) {
     setStatus('Load a ROM first');
     return;
@@ -264,6 +352,9 @@ clearStateBtn.addEventListener('click', () => {
 });
 
 const blockTouchDefaults = (event) => event.preventDefault();
+['touchstart', 'touchend', 'touchmove', 'touchcancel'].forEach((eventName) => {
+  canvas.addEventListener(eventName, blockTouchDefaults, { passive: false });
+  document.body.addEventListener(eventName, blockTouchDefaults, { passive: false });
 ['touchstart', 'touchend', 'touchmove'].forEach((eventName) => {
   canvas.addEventListener(eventName, blockTouchDefaults, { passive: false });
 });
