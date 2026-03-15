@@ -12,7 +12,9 @@ const SYSTEM_ASPECT_RATIO = {
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+
 document.addEventListener('DOMContentLoaded', () => {
+
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
   const romUploadInput = document.getElementById('rom-upload');
@@ -27,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const loadStateBtn = document.getElementById('loadStateBtn');
   const clearStateBtn = document.getElementById('clearStateBtn');
   const appShell = document.querySelector('.app-shell');
-  const bootOverlay = document.getElementById('bootOverlay');
   const cartridgeOverlay = document.getElementById('cartridgeOverlay');
   const cartridgeLabel = document.getElementById('cartridgeLabel');
   const startupSoundToggle = document.getElementById('startupSoundToggle');
@@ -126,29 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
     oscillator.stop(now + 0.58);
   }
 
-  async function runStartupSequence() {
-    playStartupSound();
-    await wait(1500);
-
-    if (!bootOverlay) return;
-    bootOverlay.style.opacity = '0';
-    bootOverlay.style.transition = 'opacity 0.5s ease';
-    appShell?.classList.add('ui-visible');
-
-    await wait(500);
-    bootOverlay.style.display = 'none';
-  }
-
-  function hideBootOverlayFallback() {
-    if (!bootOverlay) return;
-    bootOverlay.style.opacity = '0';
-    bootOverlay.style.transition = 'opacity 0.5s ease';
-    setTimeout(() => {
-      if (bootOverlay.style.display !== 'none') {
-        bootOverlay.style.display = 'none';
-      }
-    }, 500);
-  }
 
   async function playCartridgeInsert(romName) {
     cartridgeLabel.textContent = `INSERTING ${romName.toUpperCase()}...`;
@@ -507,9 +485,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderLibrary();
   drawBootScreen();
-  runStartupSequence().catch((error) => {
-    console.error('Boot sequence failed, using fallback', error);
-    hideBootOverlayFallback();
-  });
-  setTimeout(hideBootOverlayFallback, 3000);
 });
