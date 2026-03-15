@@ -14,6 +14,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 
 document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
 let loaderFailsafeTimer = null;
 
 function getLoadingScreen() {
@@ -88,7 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const ctx = canvas.getContext('2d');
   const romUploadInput = document.getElementById('rom-upload');
   const uploadButton = document.getElementById('upload-btn');
-  const romInput = document.getElementById('romInput');
   const libraryList = document.getElementById('libraryList');
   const recentList = document.getElementById('recentList');
   const activeSystemLabel = document.getElementById('activeSystem');
@@ -332,15 +332,16 @@ document.addEventListener('DOMContentLoaded', () => {
     await exitFullscreenMode();
   }
 
-  romInput.addEventListener('change', async (event) => {
+  romUploadInput?.addEventListener('change', async (event) => {
     const [file] = event.target.files;
     if (!file) return;
+
+    console.log('[ROM] selected file:', file);
 
     const system = loader.resolveSystemByFilename(file.name);
     if (!system) {
       setStatus('Unsupported format');
       romUploadInput.value = '';
-      romInput.value = '';
       return;
     }
 
@@ -373,7 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } finally {
       romUploadInput.value = '';
     }
-  };
+  });
 
   uploadButton?.addEventListener('click', () => {
     romUploadInput?.click();
@@ -450,9 +451,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setStatus(`Cleared state for ${activeRom.name}`);
   });
 
-      romInput.value = '';
-    }
-  });
 
   libraryList.addEventListener('click', async (event) => {
     const button = event.target.closest('button');
