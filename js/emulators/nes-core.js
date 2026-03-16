@@ -27,6 +27,9 @@ export default class NESCore extends EmulatorCoreInterface {
       throw new Error('jsnes core is unavailable. Add cores/jsnes/jsnes.min.js');
     }
 
+    this.canvas.width = 256;
+    this.canvas.height = 240;
+
     this.nes = new JSNES.NES({
       onFrame: (frameBuffer24) => {
         for (let i = 0; i < frameBuffer24.length; i += 1) {
