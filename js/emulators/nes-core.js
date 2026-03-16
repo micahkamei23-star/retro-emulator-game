@@ -19,8 +19,12 @@ export default class NESCore extends EmulatorCoreInterface {
     this.canvas.height = 240;
     console.log('[NESCore] canvas initialized', canvas.width, canvas.height);
     this.nes = null;
-    this.frameBuffer = new Uint8ClampedArray(256 * 240 * 4);
-    this.imageData = new ImageData(this.frameBuffer, 256, 240);
+    // createImageData gives us a canvas-backed ImageData whose .data buffer we
+    // can write to directly.  Using `new ImageData(uint8Array, w, h)` would
+    // copy the array at construction time so later writes to the array would
+    // never reach the ImageData – producing a permanently black screen.
+    this.imageData = this.ctx.createImageData(256, 240);
+    this.frameBuffer = this.imageData.data;
     this._frameCount = 0;
   }
 
