@@ -28,34 +28,58 @@ export default class NESCore extends EmulatorCoreInterface {
     this._frameCount = 0;
   }
 
-  async init() {
-    let JSNES = window.jsnes || window.JSNES;
-    if (!JSNES?.NES) {
-      await loadScript('./cores/jsnes/jsnes.min.js');
-      JSNES = window.jsnes || window.JSNES;
+  onFrame(frameBuffer24) {
+    if (this._frameCount < 5) {
+      console.log('[NESCore] Frame received');
+      this._frameCount += 1;
     }
-    console.log('[NESCore] JSNES loaded', JSNES);
-    if (!JSNES?.NES) {
+    for (let i = 0; i < frameBuffer24.length; i += 1) {
+      const pixel = frameBuffer24[i];
+      const idx = i * 4;
+      this.frameBuffer[idx] = (pixel >> 16) & 0xff;
+      this.frameBuffer[idx + 1] = (pixel >> 8) & 0xff;
+      this.frameBuffer[idx + 2] = pixel & 0xff;
+      this.frameBuffer[idx + 3] = 0xff;
+    }
+  }
+
+  async init() {
+    console.debug('JSNES global:', window.jsnes);
+    console.debug('JSNES uppercase:', window.JSNES);
+
+    let JSNESLib = this._resolveJSNES();
+
+    if (!JSNESLib?.NES) {
+      await loadScript('./cores/jsnes/jsnes.min.js');
+      JSNESLib = this._resolveJSNES();
+    }
+
+    console.log('[NESCore] JSNES loaded', JSNESLib);
+    if (!JSNESLib?.NES) {
       throw new Error('jsnes core is unavailable. Add cores/jsnes/jsnes.min.js or a CDN tag');
     }
 
-    this.nes = new JSNES.NES({
-      onFrame: (frameBuffer24) => {
-        if (this._frameCount < 5) {
-          console.log('[NESCore] Frame received');
-          this._frameCount += 1;
-        }
-        for (let i = 0; i < frameBuffer24.length; i += 1) {
-          const pixel = frameBuffer24[i];
-          const idx = i * 4;
-          this.frameBuffer[idx] = (pixel >> 16) & 0xff;
-          this.frameBuffer[idx + 1] = (pixel >> 8) & 0xff;
-          this.frameBuffer[idx + 2] = pixel & 0xff;
-          this.frameBuffer[idx + 3] = 0xff;
-        }
-      },
+    this.nes = new JSNESLib.NES({
+      onFrame: this.onFrame.bind(this),
       onAudioSample: () => {},
     });
+  }
+
+  // Resolves the JSNES library namespace, normalizing the various ways CDNs
+  // may expose the library (lowercase/uppercase global, or the NES constructor
+  // exported directly without a wrapping namespace object).
+  _resolveJSNES() {
+    const raw =
+      window.jsnes ||
+      window.JSNES ||
+      window.jsnes?.NES ||
+      window.JSNES?.NES;
+
+    if (!raw) return null;
+    // If the raw value is already a namespace with a .NES constructor, use it
+    // directly.  Otherwise, the CDN exposed the NES constructor itself – wrap it
+    // so that callers can always use JSNESLib.NES uniformly.
+    return raw.NES ? raw : { NES: raw };
   }
 
   async loadROM(romBuffer) {
