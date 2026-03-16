@@ -12,6 +12,7 @@ export function loadScript(src) {
     script.onload = () => resolve();
     script.onerror = () => {
       loadedScripts.delete(src);
+      document.head.removeChild(script);
       reject(new Error(`Failed to load script: ${src}`));
     };
     document.head.appendChild(script);
