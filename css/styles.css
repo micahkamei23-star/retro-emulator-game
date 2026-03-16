@@ -113,11 +113,12 @@ body.game-active .library-panel,
 }
 
 #gameCanvas {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 256 / 240;
+  width: 95%;
+  max-width: 700px;
+  aspect-ratio: 4 / 3;
   image-rendering: pixelated;
+  margin: auto;
+  display: block;
   background: #050505;
   touch-action: none;
   -webkit-user-select: none;
@@ -193,12 +194,17 @@ body.game-active #gameCanvas {
   display: none;
 }
 
-/* ── Game actions ──────────────────────────────────────────────── */
+/* ── Game actions / utility buttons ────────────────────────────── */
 .game-actions {
   margin-top: 0.6rem;
   display: flex;
   gap: 0.4rem;
   flex-wrap: wrap;
+}
+
+.utility-buttons button {
+  padding: 6px 12px;
+  font-size: 14px;
 }
 
 /* ── Library toggle row ────────────────────────────────────────── */
@@ -328,11 +334,15 @@ body.game-active #gameCanvas {
 
 /* ── Touch controls ────────────────────────────────────────────── */
 .controls-section {
+  border-top: 1px solid rgba(247, 247, 255, 0.15);
+}
+
+.controls {
   display: flex;
   justify-content: space-between;
-  padding: 0.8rem 0.6rem;
-  gap: 0.6rem;
-  border-top: 1px solid rgba(247, 247, 255, 0.15);
+  align-items: center;
+  padding: 20px;
+  width: 100%;
 }
 
 .touch-btn {
@@ -358,9 +368,14 @@ body.game-active #gameCanvas {
 
 .dpad {
   display: grid;
-  grid-template-columns: repeat(3, 64px);
-  grid-template-rows: repeat(3, 52px);
-  gap: 0.4rem;
+  grid-template-columns: 60px 60px 60px;
+  grid-template-rows: 60px 60px 60px;
+  gap: 0;
+}
+
+.dpad button {
+  background: #3a3a3a;
+  border-radius: 12px;
 }
 
 .dpad-up    { grid-area: 1 / 2; }
@@ -373,6 +388,42 @@ body.game-active #gameCanvas {
   grid-template-columns: repeat(3, minmax(64px, 76px));
   gap: 0.4rem;
   align-content: center;
+}
+
+/* ── ABXY diamond layout ───────────────────────────────────────── */
+.abxy {
+  display: grid;
+  grid-template-columns: repeat(3, 60px);
+  grid-template-rows: repeat(3, 60px);
+  gap: 10px;
+}
+
+.abxy button:nth-child(1) { grid-column: 2; grid-row: 1; } /* Y */
+.abxy button:nth-child(2) { grid-column: 1; grid-row: 2; } /* X */
+.abxy button:nth-child(3) { grid-column: 3; grid-row: 2; } /* B */
+.abxy button:nth-child(4) { grid-column: 2; grid-row: 3; } /* A */
+
+/* ── Arcade-style controller button ────────────────────────────── */
+.controller-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #3b3b3b;
+  box-shadow:
+    inset 0 -4px 0 rgba(0, 0, 0, 0.5),
+    0 3px 6px rgba(0, 0, 0, 0.5);
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  border: none;
+}
+
+/* ── Center Start / Select buttons ─────────────────────────────── */
+.center-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
 }
 
 /* ── Focus ─────────────────────────────────────────────────────── */

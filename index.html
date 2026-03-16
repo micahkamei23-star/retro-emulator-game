@@ -29,7 +29,7 @@
           <button id="exitFullscreenOverlay" class="exit-overlay" type="button" hidden>Tap to exit game</button>
         </div>
 
-        <div class="game-actions">
+        <div class="game-actions utility-buttons">
           <button id="saveStateBtn" class="action-btn">Save State</button>
           <button id="loadStateBtn" class="action-btn">Load State</button>
           <button id="clearStateBtn" class="action-btn warning">Clear State</button>
@@ -49,19 +49,23 @@
     </main>
 
     <section class="controls-section" aria-label="Touch controls">
-      <div class="dpad">
-        <button data-control="up" class="touch-btn dpad-up">▲</button>
-        <button data-control="left" class="touch-btn dpad-left">◀</button>
-        <button data-control="right" class="touch-btn dpad-right">▶</button>
-        <button data-control="down" class="touch-btn dpad-down">▼</button>
-      </div>
-      <div class="action-cluster">
-        <button data-control="a" class="touch-btn action a">A</button>
-        <button data-control="b" class="touch-btn action b">B</button>
-        <button data-control="x" class="touch-btn action x">X</button>
-        <button data-control="y" class="touch-btn action y">Y</button>
-        <button data-control="select" class="touch-btn utility">Select</button>
-        <button data-control="start" class="touch-btn utility">Start</button>
+      <div class="controls">
+        <div class="dpad">
+          <button data-control="up" class="touch-btn dpad-up">▲</button>
+          <button data-control="left" class="touch-btn dpad-left">◀</button>
+          <button data-control="right" class="touch-btn dpad-right">▶</button>
+          <button data-control="down" class="touch-btn dpad-down">▼</button>
+        </div>
+        <div class="center-buttons">
+          <button data-control="select" class="touch-btn utility">Select</button>
+          <button data-control="start" class="touch-btn utility">Start</button>
+        </div>
+        <div class="abxy">
+          <button data-control="y" class="touch-btn controller-btn">Y</button>
+          <button data-control="x" class="touch-btn controller-btn">X</button>
+          <button data-control="b" class="touch-btn controller-btn">B</button>
+          <button data-control="a" class="touch-btn controller-btn">A</button>
+        </div>
       </div>
     </section>
   </div>
