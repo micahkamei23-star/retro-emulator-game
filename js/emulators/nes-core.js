@@ -66,20 +66,18 @@ export default class NESCore extends EmulatorCoreInterface {
   }
 
   // Resolves the JSNES library namespace, normalizing the various ways CDNs
-  // may expose the library (lowercase/uppercase global, or the NES constructor
-  // exported directly without a wrapping namespace object).
+  // may expose the library. Checks window.jsnes first (lowercase), then
+  // window.JSNES (uppercase). If the found value is already a namespace with a
+  // .NES constructor, it is returned as-is. If it is the NES constructor
+  // function itself (exported without a wrapping namespace), it is wrapped so
+  // that callers can always use JSNESLib.NES uniformly.
   _resolveJSNES() {
-    const raw =
-      window.jsnes ||
-      window.JSNES ||
-      window.jsnes?.NES ||
-      window.JSNES?.NES;
+    const raw = window.jsnes || window.JSNES;
 
     if (!raw) return null;
-    // If the raw value is already a namespace with a .NES constructor, use it
-    // directly.  Otherwise, the CDN exposed the NES constructor itself – wrap it
-    // so that callers can always use JSNESLib.NES uniformly.
-    return raw.NES ? raw : { NES: raw };
+    if (raw.NES) return raw;
+    if (typeof raw === 'function') return { NES: raw };
+    return null;
   }
 
   async loadROM(romBuffer) {
