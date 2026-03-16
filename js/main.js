@@ -215,7 +215,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function stopGame() {
+    const system = activeRom?.system;
     activeCore?.stop();
+    if (system) loader.unloadCore(system);
     activeCore = null;
     activeRom  = null;
     activeSystemLabel.textContent = 'System: None';
