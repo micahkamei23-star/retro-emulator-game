@@ -114,7 +114,7 @@ body.game-active .library-panel,
 
 #gameCanvas {
   width: 95%;
-  max-width: 700px;
+  max-width: 720px;
   aspect-ratio: 4 / 3;
   image-rendering: pixelated;
   margin: auto;
@@ -332,12 +332,23 @@ body.game-active #gameCanvas {
   font-size: 0.52rem;
 }
 
+/* ── Main container (flex column) ──────────────────────────────── */
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
 /* ── Touch controls ────────────────────────────────────────────── */
 .controls-section {
+  width: 95%;
+  max-width: 720px;
+  margin-top: 10px;
   border-top: 1px solid rgba(247, 247, 255, 0.15);
 }
 
-.controls {
+.controller {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -418,12 +429,18 @@ body.game-active #gameCanvas {
   border: none;
 }
 
-/* ── Center Start / Select buttons ─────────────────────────────── */
-.center-buttons {
+/* ── Start / Select buttons ─────────────────────────────────────── */
+.start-select {
+  margin-top: 12px;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.start-select button {
+  width: 50px;
+  height: 30px;
+  font-size: 12px;
 }
 
 /* ── Focus ─────────────────────────────────────────────────────── */
@@ -451,4 +468,23 @@ button:focus-visible,
 @keyframes pulse {
   0%, 100% { transform: scale(0.8); opacity: 0.65; }
   50%       { transform: scale(1); opacity: 1; }
+}
+
+/* ── Responsive landscape layout ──────────────────────────────── */
+@media (orientation: landscape) {
+  .main-container {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+  }
+
+  #gameCanvas {
+    width: 60vw;
+    max-width: 900px;
+  }
+
+  .controls-section {
+    width: auto;
+  }
 }
