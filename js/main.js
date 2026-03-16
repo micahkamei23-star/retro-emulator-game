@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let   activeRom       = null;
   let   activeCore      = null;
   let   isLaunching     = false;
+  let   exitOverlayVisible = false;
 
   // ─── Controller ──────────────────────────────────────────────────────────────
   new Controller(({ control, pressed }) => {
@@ -63,7 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function setGameMode(active) {
     document.body.classList.toggle('game-active', active);
     appShell.classList.toggle('game-mode', active);
-    exitFullscreenOverlay.hidden = !active;
+    exitOverlayVisible = false;
+    exitFullscreenOverlay.hidden = true;
     exitGameBtn.hidden           = !active;
   }
 
@@ -285,6 +287,19 @@ document.addEventListener('DOMContentLoaded', () => {
   exitFullscreenOverlay.addEventListener('touchstart', async (e) => { e.preventDefault(); await stopGame(); }, { passive: false });
   exitFullscreenOverlay.addEventListener('click', () => stopGame());
   exitGameBtn.addEventListener('click', () => stopGame());
+
+  // ─── Exit overlay toggle (tap canvas to show/hide) ────────────────────────────
+  canvas.addEventListener('click', () => {
+    if (!activeCore) return;
+    exitOverlayVisible = !exitOverlayVisible;
+    exitFullscreenOverlay.hidden = !exitOverlayVisible;
+  });
+  canvas.addEventListener('touchend', (e) => {
+    if (!activeCore) return;
+    e.preventDefault();
+    exitOverlayVisible = !exitOverlayVisible;
+    exitFullscreenOverlay.hidden = !exitOverlayVisible;
+  }, { passive: false });
 
   // ─── Save / Load / Clear state ────────────────────────────────────────────────
   saveStateBtn.addEventListener('click', () => {
