@@ -122,11 +122,17 @@ class Controller {
     });
 
     document.addEventListener('touchstart', (event) => {
-      event.preventDefault();
+      // Only prevent default when at least one touch lands on a game-control
+      // element.  Preventing it unconditionally swallows the synthesised click
+      // that iOS Safari generates for the "Upload ROM" label, so the file
+      // picker never opens.
+      let touchedControl = false;
       for (const touch of event.changedTouches) {
         const control = this.getControlFromTouchPoint(touch);
+        if (control) touchedControl = true;
         this.assignTouchToControl(touch.identifier, control, { vibrate: Boolean(control) });
       }
+      if (touchedControl) event.preventDefault();
     }, { passive: false });
 
     document.addEventListener('touchmove', (event) => {

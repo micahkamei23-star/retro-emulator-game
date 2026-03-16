@@ -252,10 +252,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ─── Upload button ────────────────────────────────────────────────────────────
-  uploadButton?.addEventListener('click', () => {
-    console.log('ROM button clicked');
-    romUploadInput?.click();
-  });
+  // The <label for="rom-upload"> in index.html already activates the hidden
+  // file input via the HTML `for` association.  Adding a programmatic
+  // `.click()` here as well would open the file picker twice and is known to
+  // fail on iOS Safari, so the redundant handler is intentionally omitted.
 
   // ─── Library toggle ───────────────────────────────────────────────────────────
   libraryToggleBtn?.addEventListener('click', () => {
@@ -308,9 +308,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ─── Touch / context-menu passthrough block ───────────────────────────────────
+  // Only prevent default on the canvas itself; applying it to document.body
+  // would swallow the synthesised click that iOS Safari generates for the
+  // "Upload ROM" label, preventing the file picker from ever opening.
   ['touchstart', 'touchend', 'touchmove', 'touchcancel'].forEach((ev) => {
     canvas.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
-    document.body.addEventListener(ev, (e) => e.preventDefault(), { passive: false });
   });
   [canvas, document.body].forEach((el) => el.addEventListener('contextmenu', (e) => e.preventDefault()));
 
