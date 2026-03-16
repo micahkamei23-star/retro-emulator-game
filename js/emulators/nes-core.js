@@ -30,7 +30,7 @@ export default class NESCore extends EmulatorCoreInterface {
 
   onFrame(frameBuffer24) {
     if (this._frameCount < 5) {
-      console.log('[NESCore] Frame received');
+      console.log('[NESCore] Frame received', frameBuffer24.length);
       this._frameCount += 1;
     }
     for (let i = 0; i < frameBuffer24.length; i += 1) {
