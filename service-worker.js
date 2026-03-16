@@ -1,4 +1,4 @@
-const SW_VERSION = 'v7';
+const SW_VERSION = 'v8';
 const CACHE_PREFIX = 'retro-emulator-cache';
 const CACHE_NAME = `${CACHE_PREFIX}-${SW_VERSION}`;
 
@@ -10,6 +10,7 @@ const APP_SHELL = [
   './js/main.js',
   './js/controller.js',
   './js/emulator-loader.js',
+  './js/rom-loader.js',
   './js/storage.js',
   './js/emulators/core-interface.js',
   './js/emulators/script-loader.js',
@@ -20,6 +21,7 @@ const APP_SHELL = [
 ];
 
 const CORE_ASSETS = [
+  'https://unpkg.com/jsnes/dist/jsnes.min.js',
   './cores/jsnes/jsnes.min.js',
   './cores/gameboy/gameboy.min.js',
   './cores/mgba/mgba.wasm',
@@ -43,8 +45,8 @@ self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
     await cacheAssets(cache, APP_SHELL);
+    self.skipWaiting();
   })());
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {

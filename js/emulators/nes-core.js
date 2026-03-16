@@ -15,23 +15,32 @@ const BUTTON_MAP = {
 export default class NESCore extends EmulatorCoreInterface {
   constructor(canvas) {
     super(canvas);
+    this.canvas.width = 256;
+    this.canvas.height = 240;
+    console.log('[NESCore] canvas initialized', canvas.width, canvas.height);
     this.nes = null;
     this.frameBuffer = new Uint8ClampedArray(256 * 240 * 4);
     this.imageData = new ImageData(this.frameBuffer, 256, 240);
+    this._frameCount = 0;
   }
 
   async init() {
-    await loadScript('./cores/jsnes/jsnes.min.js');
-    const JSNES = window.jsnes || window.JSNES;
+    let JSNES = window.jsnes || window.JSNES;
     if (!JSNES?.NES) {
-      throw new Error('jsnes core is unavailable. Add cores/jsnes/jsnes.min.js');
+      await loadScript('./cores/jsnes/jsnes.min.js');
+      JSNES = window.jsnes || window.JSNES;
     }
-
-    this.canvas.width = 256;
-    this.canvas.height = 240;
+    console.log('[NESCore] JSNES loaded', JSNES);
+    if (!JSNES?.NES) {
+      throw new Error('jsnes core is unavailable. Add cores/jsnes/jsnes.min.js or a CDN tag');
+    }
 
     this.nes = new JSNES.NES({
       onFrame: (frameBuffer24) => {
+        if (this._frameCount < 5) {
+          console.log('[NESCore] Frame received');
+          this._frameCount += 1;
+        }
         for (let i = 0; i < frameBuffer24.length; i += 1) {
           const pixel = frameBuffer24[i];
           const idx = i * 4;
@@ -46,7 +55,8 @@ export default class NESCore extends EmulatorCoreInterface {
   }
 
   async loadROM(romBuffer) {
-    const binary = new TextDecoder('latin1').decode(new Uint8Array(romBuffer));
+    const bytes = romBuffer instanceof Uint8Array ? romBuffer : new Uint8Array(romBuffer);
+    const binary = new TextDecoder('latin1').decode(bytes);
     this.nes.loadROM(binary);
   }
 
