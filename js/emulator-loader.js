@@ -67,6 +67,8 @@ class EmulatorLoader {
     const config = CORE_CONFIG[system];
     if (!config) throw new Error(`Unsupported system: ${system}`);
 
+    console.log('Loading core:', system);
+
     if (this.cores.has(system)) return this.cores.get(system);
 
     const core = config.createCore(this.canvas);
@@ -84,6 +86,7 @@ class EmulatorLoader {
   }
 
   unloadCore(system) {
+    console.log('Unloading core:', system);
     if (this.cores.has(system)) {
       this.cores.get(system).core.destroy();
       this.cores.delete(system);

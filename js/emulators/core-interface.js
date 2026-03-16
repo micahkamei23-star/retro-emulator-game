@@ -17,14 +17,20 @@ export class EmulatorCoreInterface {
   }
 
   start(onFrame) {
+    let frameCount = 0;
     const loop = () => {
       this.runFrame();
       if (onFrame) onFrame();
+      frameCount += 1;
+      if (frameCount <= 3) {
+        console.log('Frame callback fired', frameCount);
+      }
       this.animationFrameId = requestAnimationFrame(loop);
     };
 
     this.stop();
     this.animationFrameId = requestAnimationFrame(loop);
+    console.log('Starting frame loop');
     console.log('Core started');
   }
 

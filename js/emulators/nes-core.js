@@ -63,6 +63,7 @@ export default class NESCore extends EmulatorCoreInterface {
       onFrame: this.onFrame.bind(this),
       onAudioSample: () => {},
     });
+    console.log('NES instance created');
   }
 
   // Resolves the JSNES library namespace, normalizing the various ways CDNs
@@ -82,7 +83,18 @@ export default class NESCore extends EmulatorCoreInterface {
 
   async loadROM(romBuffer) {
     const bytes = romBuffer instanceof Uint8Array ? romBuffer : new Uint8Array(romBuffer);
-    const binary = new TextDecoder('latin1').decode(bytes);
+    // TextDecoder('latin1') routes through the Windows-1252 code page for bytes
+    // 0x80-0x9F, mapping them to different Unicode code points than their raw
+    // numeric values. JSNES recovers byte values via charCodeAt(), so those
+    // bytes would be silently corrupted. A direct String.fromCharCode loop
+    // always maps each byte to the Unicode code point with the same numeric
+    // value, which is what JSNES expects.
+    const chars = new Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) {
+      chars[i] = String.fromCharCode(bytes[i]);
+    }
+    const binary = chars.join('');
+    console.log('Calling nes.loadROM', bytes.length, 'bytes');
     this.nes.loadROM(binary);
   }
 
