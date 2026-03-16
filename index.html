@@ -4,18 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#231942" />
-  <title>Retro Emulator Game</title>
+  <title>Retro Emulator</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
   <div class="app-shell ui-visible">
-    <header class="console-header">
-      <h1>Retro Emulator Game</h1>
-      <p class="subtitle">Offline-ready handheld console</p>
-      <label class="sound-toggle"><input id="startupSoundToggle" type="checkbox" /> Startup sound</label>
-    </header>
-
     <main class="console-body">
       <section class="screen-panel">
         <div class="status-row">
@@ -26,9 +20,7 @@
         </div>
 
         <div class="screen-frame">
-          <canvas id="gameCanvas" width="640" height="480" aria-label="Emulator screen"></canvas>
-          <div class="scanlines" aria-hidden="true"></div>
-          <div class="screen-glow" aria-hidden="true"></div>
+          <canvas id="gameCanvas" width="256" height="240" aria-label="Emulator screen"></canvas>
           <div id="cartridgeOverlay" class="cartridge-overlay" aria-hidden="true">
             <div class="cartridge-slot"></div>
             <div class="cartridge-body"></div>
@@ -44,10 +36,13 @@
         </div>
       </section>
 
-      <aside class="library-panel">
-        <h2>Game Library</h2>
+      <div class="library-toggle-row">
+        <button id="libraryToggleBtn" class="action-btn" type="button">Game Library ▼</button>
         <button id="upload-btn" class="file-input-label" type="button">Upload ROM</button>
         <input type="file" id="rom-upload" accept=".nes,.gba,.sfc,.smc,.gb" hidden />
+      </div>
+
+      <aside id="libraryDrawer" class="library-panel" hidden>
         <ol id="recentList" class="recent-list" aria-label="Recently played games"></ol>
         <ul id="libraryList" class="library-list" aria-live="polite"></ul>
       </aside>

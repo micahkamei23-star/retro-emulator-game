@@ -57,6 +57,7 @@ export function setupRomLoader({
       if (currentCore && currentCore !== loaded.core) currentCore.stop();
 
       await loaded.core.loadROM(romBytes);
+      console.log('ROM loaded into emulator');
       loaded.core.setInput(getControllerState?.() || {});
 
       console.log('Starting emulator');

@@ -30,9 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const appShell            = document.querySelector('.app-shell');
   const cartridgeOverlay    = document.getElementById('cartridgeOverlay');
   const cartridgeLabel      = document.getElementById('cartridgeLabel');
-  const startupSoundToggle  = document.getElementById('startupSoundToggle');
   const exitFullscreenOverlay = document.getElementById('exitFullscreenOverlay');
   const exitGameBtn         = document.getElementById('exitGameBtn');
+  const libraryToggleBtn    = document.getElementById('libraryToggleBtn');
+  const libraryDrawer       = document.getElementById('libraryDrawer');
 
   // ─── Core state ──────────────────────────────────────────────────────────────
   const loader          = new EmulatorLoader(canvas);
@@ -96,22 +97,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function playStartupSound() {
-    if (!startupSoundToggle?.checked) return;
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (!AudioCtx) return;
-    const ctx2 = new AudioCtx();
-    const now   = ctx2.currentTime;
-    const osc   = ctx2.createOscillator();
-    const gain  = ctx2.createGain();
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(220, now);
-    osc.frequency.linearRampToValueAtTime(520, now + 0.45);
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.08,   now + 0.04);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
-    osc.connect(gain).connect(ctx2.destination);
-    osc.start(now);
-    osc.stop(now + 0.58);
+    try {
+      const ctx2 = new AudioCtx();
+      const now   = ctx2.currentTime;
+      const osc   = ctx2.createOscillator();
+      const gain  = ctx2.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.linearRampToValueAtTime(520, now + 0.45);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.08,   now + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
+      osc.connect(gain).connect(ctx2.destination);
+      osc.start(now);
+      osc.stop(now + 0.58);
+    } catch { /* autoplay blocked — ignore */ }
   }
 
   // ─── Library rendering ───────────────────────────────────────────────────────
@@ -250,7 +252,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ─── Upload button ────────────────────────────────────────────────────────────
-  uploadButton?.addEventListener('click', () => romUploadInput?.click());
+  uploadButton?.addEventListener('click', () => {
+    console.log('ROM button clicked');
+    romUploadInput?.click();
+  });
+
+  // ─── Library toggle ───────────────────────────────────────────────────────────
+  libraryToggleBtn?.addEventListener('click', () => {
+    const isHidden = libraryDrawer?.hidden;
+    if (libraryDrawer) libraryDrawer.hidden = !isHidden;
+    libraryToggleBtn.textContent = isHidden ? 'Game Library ▲' : 'Game Library ▼';
+  });
 
   // ─── Library clicks ───────────────────────────────────────────────────────────
   libraryList.addEventListener('click', async (e) => {
@@ -319,6 +331,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ─── Cleanup on unload ────────────────────────────────────────────────────────
   window.addEventListener('beforeunload', () => loader.unloadAll());
+
+  // ─── Startup sound on first user gesture ─────────────────────────────────────
+  const onFirstGesture = () => playStartupSound();
+  document.addEventListener('click', onFirstGesture, { once: true });
+  document.addEventListener('touchstart', onFirstGesture, { once: true });
 
   // ─── Initial render ───────────────────────────────────────────────────────────
   renderLibrary();
