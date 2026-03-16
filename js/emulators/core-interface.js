@@ -25,12 +25,14 @@ export class EmulatorCoreInterface {
 
     this.stop();
     this.animationFrameId = requestAnimationFrame(loop);
+    console.log('Core started');
   }
 
   stop() {
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
+      console.log('Core stopped');
     }
   }
 

@@ -108,4 +108,9 @@ export default class NESCore extends EmulatorCoreInterface {
     const json = new TextDecoder().decode(base64ToUint8(state));
     this.nes.fromJSON(JSON.parse(json));
   }
+
+  destroy() {
+    this.stop();
+    this.nes = null;
+  }
 }

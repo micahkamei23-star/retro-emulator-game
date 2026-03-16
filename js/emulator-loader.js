@@ -83,9 +83,20 @@ class EmulatorLoader {
     return loaded;
   }
 
+  unloadCore(system) {
+    if (this.cores.has(system)) {
+      this.cores.get(system).core.destroy();
+      this.cores.delete(system);
+    }
+    this.currentCore = null;
+    console.log('Loader reset');
+  }
+
   unloadAll() {
     this.cores.forEach((entry) => entry.core.destroy());
     this.cores.clear();
+    this.currentCore = null;
+    console.log('Loader reset');
   }
 }
 
