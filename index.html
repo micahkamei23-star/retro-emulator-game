@@ -3,24 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#231942" />
+  <meta name="theme-color" content="#0a0a12" />
+  <meta name="description" content="Retro Emulator — play classic NES, SNES, GBA and Game Boy games in your browser." />
   <title>Retro Emulator</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
+  <a class="skip-nav" href="#game-controls">Skip to game controls</a>
+
   <div class="app-shell main-container ui-visible">
-    <main class="console-body">
-      <section class="screen-panel">
-        <div class="status-row">
+    <main class="console-body" id="main-content">
+      <section class="screen-panel" aria-label="Game screen">
+        <div class="status-row" role="status" aria-live="polite" aria-atomic="false">
+          <span class="power-led" aria-hidden="true"></span>
           <span id="activeSystem">System: None</span>
           <span id="activeCore">Core: None</span>
           <span id="activeRom">ROM: None</span>
           <button id="exitGameBtn" class="mini-exit-btn" type="button" hidden>Exit Game</button>
         </div>
 
-        <div class="screen-frame">
+        <div class="screen-frame" role="img" aria-label="Emulator display">
           <canvas id="gameCanvas" width="256" height="240" aria-label="Emulator screen"></canvas>
+          <div class="scanline-overlay" aria-hidden="true"></div>
           <div id="cartridgeOverlay" class="cartridge-overlay" aria-hidden="true">
             <div class="cartridge-slot"></div>
             <div class="cartridge-body"></div>
@@ -30,42 +35,42 @@
         </div>
 
         <div class="game-actions utility-buttons">
-          <button id="saveStateBtn" class="action-btn">Save State</button>
-          <button id="loadStateBtn" class="action-btn">Load State</button>
-          <button id="clearStateBtn" class="action-btn warning">Clear State</button>
+          <button id="saveStateBtn" class="action-btn" type="button">Save State</button>
+          <button id="loadStateBtn" class="action-btn" type="button">Load State</button>
+          <button id="clearStateBtn" class="action-btn warning" type="button">Clear State</button>
         </div>
       </section>
 
       <div class="library-toggle-row">
-        <button id="libraryToggleBtn" class="action-btn" type="button">Game Library ▼</button>
-        <label for="rom-upload" id="upload-btn" class="file-input-label">Upload ROM</label>
-        <input type="file" id="rom-upload" accept=".nes,.gba,.sfc,.smc,.gb" hidden />
+        <button id="libraryToggleBtn" class="action-btn" type="button" aria-expanded="false" aria-controls="libraryDrawer">Game Library ▼</button>
+        <label for="rom-upload" id="upload-btn" class="file-input-label" tabindex="0">Upload ROM</label>
+        <input type="file" id="rom-upload" accept=".nes,.gba,.sfc,.smc,.gb" hidden aria-label="Upload ROM file" />
       </div>
 
-      <aside id="libraryDrawer" class="library-panel" hidden>
+      <aside id="libraryDrawer" class="library-panel" hidden aria-label="Game library">
         <ol id="recentList" class="recent-list" aria-label="Recently played games"></ol>
-        <ul id="libraryList" class="library-list" aria-live="polite"></ul>
+        <ul id="libraryList" class="library-list" aria-live="polite" aria-label="All games"></ul>
       </aside>
     </main>
 
-    <section class="controls-section" aria-label="Touch controls">
-      <div class="controller">
-        <div class="dpad">
-          <button data-control="up" class="touch-btn dpad-up">▲</button>
-          <button data-control="left" class="touch-btn dpad-left">◀</button>
-          <button data-control="right" class="touch-btn dpad-right">▶</button>
-          <button data-control="down" class="touch-btn dpad-down">▼</button>
+    <section class="controls-section" id="game-controls" aria-label="Touch game controls">
+      <div class="controller" role="group" aria-label="Controller">
+        <div class="dpad" role="group" aria-label="D-pad directional buttons">
+          <button data-control="up"    class="touch-btn dpad-up"    type="button" aria-label="Up">▲</button>
+          <button data-control="left"  class="touch-btn dpad-left"  type="button" aria-label="Left">◀</button>
+          <button data-control="right" class="touch-btn dpad-right" type="button" aria-label="Right">▶</button>
+          <button data-control="down"  class="touch-btn dpad-down"  type="button" aria-label="Down">▼</button>
         </div>
-        <div class="abxy">
-          <button data-control="y" class="touch-btn controller-btn">Y</button>
-          <button data-control="x" class="touch-btn controller-btn">X</button>
-          <button data-control="b" class="touch-btn controller-btn">B</button>
-          <button data-control="a" class="touch-btn controller-btn">A</button>
+        <div class="abxy" role="group" aria-label="Action buttons">
+          <button data-control="y" class="touch-btn controller-btn" type="button" aria-label="Y button">Y</button>
+          <button data-control="x" class="touch-btn controller-btn" type="button" aria-label="X button">X</button>
+          <button data-control="b" class="touch-btn controller-btn" type="button" aria-label="B button">B</button>
+          <button data-control="a" class="touch-btn controller-btn" type="button" aria-label="A button">A</button>
         </div>
       </div>
-      <div class="start-select">
-        <button data-control="select" class="touch-btn utility">Select</button>
-        <button data-control="start" class="touch-btn utility">Start</button>
+      <div class="start-select" role="group" aria-label="Start and Select buttons">
+        <button data-control="select" class="touch-btn utility" type="button" aria-label="Select">Select</button>
+        <button data-control="start"  class="touch-btn utility" type="button" aria-label="Start">Start</button>
       </div>
     </section>
   </div>
