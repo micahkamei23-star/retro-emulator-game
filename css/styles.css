@@ -1,49 +1,142 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
+/* ── Design Tokens ──────────────────────────────────────────────────────────── */
 :root {
-  --bg: #0a0a12;
-  --panel: #1f1b2e;
-  --panel-2: #2a2340;
-  --neon: #00f5d4;
-  --accent: #f15bb5;
-  --text: #f7f7ff;
-  --warning: #ff595e;
+  /* Core palette */
+  --bg:           #0a0a12;
+  --panel:        #1c1728;
+  --panel-2:      #2a2340;
+  --panel-hover:  #352c5c;
+  --neon:         #00f5d4;
+  --neon-dim:     rgba(0, 245, 212, 0.14);
+  --neon-glow:    rgba(0, 245, 212, 0.35);
+  --accent:       #f15bb5;
+  --text:         #f7f7ff;
+  --text-muted:   rgba(247, 247, 255, 0.55);
+  --warning:      #ff595e;
+  --border:       rgba(247, 247, 255, 0.1);
+  --border-hover: rgba(247, 247, 255, 0.28);
+
+  /* ABXY action-button colors */
+  --btn-a:        #e63946;
+  --btn-b:        #f4a261;
+  --btn-x:        #4361ee;
+  --btn-y:        #2dc653;
+
+  /* Spacing scale */
+  --space-xs:  0.25rem;
+  --space-sm:  0.5rem;
+  --space-md:  0.75rem;
+  --space-lg:  1rem;
+  --space-xl:  1.5rem;
+  --space-2xl: 2rem;
+
+  /* Border-radius scale */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   16px;
+  --radius-xl:   22px;
+  --radius-pill: 999px;
+
+  /* Transition presets */
+  --t-fast: 0.08s ease;
+  --t-base: 0.18s ease;
+  --t-slow: 0.35s ease;
+
+  /* Shadows */
+  --shadow-sm:    0 2px 8px rgba(0, 0, 0, 0.45);
+  --shadow-md:    0 4px 18px rgba(0, 0, 0, 0.55);
+  --shadow-lg:    0 8px 36px rgba(0, 0, 0, 0.65);
+  --shadow-inset: inset 0 2px 10px rgba(0, 0, 0, 0.55);
+  --shadow-neon:  0 0 22px rgba(0, 245, 212, 0.25);
+
+  /* Z-index layers */
+  --z-base:    1;
+  --z-overlay: 10;
+  --z-modal:   100;
 }
 
-* {
+/* ── Reset ──────────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
-html,
-body {
+html, body {
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
 }
 
+/* ── Body & background ──────────────────────────────────────────────────────── */
 body {
   margin: 0;
-  min-height: 100vh;
-  font-family: 'Press Start 2P', 'Trebuchet MS', sans-serif;
+  min-height: 100svh;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
   color: var(--text);
   background:
-    radial-gradient(circle at 20% 20%, #3a0ca3 0%, transparent 40%),
-    radial-gradient(circle at 80% 30%, #7209b7 0%, transparent 35%),
+    radial-gradient(ellipse at 15% 10%,  rgba(58,  12, 163, 0.70) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 20%,  rgba(114,  9, 183, 0.55) 0%, transparent 42%),
+    radial-gradient(ellipse at 50% 100%, rgba(0, 245, 212, 0.07) 0%, transparent 55%),
     var(--bg);
-  padding: max(0.5rem, env(safe-area-inset-top)) 0.5rem max(0.5rem, env(safe-area-inset-bottom));
+  padding:
+    max(0.5rem, env(safe-area-inset-top))
+    max(0.5rem, env(safe-area-inset-right))
+    max(0.5rem, env(safe-area-inset-bottom))
+    max(0.5rem, env(safe-area-inset-left));
   touch-action: none;
+  overflow-x: hidden;
 }
 
-/* ── App shell ─────────────────────────────────────────────────── */
+/* ── Skip navigation ────────────────────────────────────────────────────────── */
+.skip-nav {
+  position: absolute;
+  top: -100%;
+  left: var(--space-sm);
+  z-index: var(--z-modal);
+  background: var(--neon);
+  color: #000;
+  font-family: inherit;
+  font-size: 0.75rem;
+  padding: var(--space-xs) var(--space-md);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  text-decoration: none;
+  transition: top var(--t-base);
+}
+
+.skip-nav:focus {
+  top: 0;
+}
+
+/* ── App shell ──────────────────────────────────────────────────────────────── */
 .app-shell {
-  max-width: 600px;
+  max-width: 620px;
   margin: 0 auto;
-  border-radius: 12px;
-  background: linear-gradient(180deg, rgba(25, 21, 41, 0.9), rgba(10, 10, 18, 0.95));
+  border-radius: var(--radius-xl);
+  background: linear-gradient(160deg, rgba(28, 22, 44, 0.97) 0%, rgba(10, 8, 20, 0.99) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 0 0 1px rgba(0, 245, 212, 0.05),
+    var(--shadow-lg),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
   overflow: hidden;
   opacity: 0;
-  transform: translateY(16px);
+  transform: translateY(20px);
   transition: opacity 0.5s ease, transform 0.5s ease;
+  position: relative;
+}
+
+/* Top-edge gloss accent */
+.app-shell::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--neon), var(--accent), transparent);
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: var(--z-base);
 }
 
 .app-shell.ui-visible {
@@ -51,12 +144,12 @@ body {
   transform: translateY(0);
 }
 
-/* game-active: expand to full viewport */
+/* ── Game-active: expand to full viewport ───────────────────────────────────── */
 body.game-active .app-shell,
 .app-shell.game-mode {
   max-width: 100vw;
   border-radius: 0;
-  min-height: 100vh;
+  min-height: 100svh;
 }
 
 body.game-active .game-actions,
@@ -68,56 +161,123 @@ body.game-active .library-panel,
   display: none;
 }
 
-/* ── Layout ────────────────────────────────────────────────────── */
+/* ── Layout ─────────────────────────────────────────────────────────────────── */
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+}
+
 .console-body {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  padding: 0.6rem;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  width: 100%;
 }
 
-/* ── Screen panel ──────────────────────────────────────────────── */
+/* ── Screen panel ───────────────────────────────────────────────────────────── */
 .screen-panel {
-  background: var(--panel);
-  border-radius: 10px;
-  padding: 0.6rem;
+  background: linear-gradient(160deg, #1c1728 0%, #12101e 100%);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-inset), var(--shadow-sm);
 }
 
+/* ── Status row ─────────────────────────────────────────────────────────────── */
 .status-row {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.52rem;
-  margin-bottom: 0.5rem;
+  gap: var(--space-xs) var(--space-sm);
+  font-size: 0.65rem;
+  margin-bottom: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  letter-spacing: 0.02em;
 }
 
+.status-row span:not(.power-led) {
+  color: var(--neon);
+  text-shadow: 0 0 8px rgba(0, 245, 212, 0.45);
+  font-size: 0.6rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Power LED */
+.power-led {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--neon);
+  box-shadow: 0 0 6px var(--neon), 0 0 12px rgba(0, 245, 212, 0.5);
+  animation: ledPulse 2.5s ease-in-out infinite;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+body.game-active .power-led {
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent), 0 0 12px rgba(241, 91, 181, 0.5);
+}
+
+/* Mini exit button */
 .mini-exit-btn {
-  border: 1px solid rgba(247, 247, 255, 0.35);
-  background: rgba(12, 11, 18, 0.7);
-  color: var(--text);
-  border-radius: 999px;
+  border: 1px solid rgba(255, 89, 94, 0.4);
+  background: rgba(255, 89, 94, 0.1);
+  color: var(--warning);
+  border-radius: var(--radius-pill);
   font-family: inherit;
-  font-size: 0.52rem;
-  padding: 0.38rem 0.6rem;
+  font-size: 0.58rem;
+  padding: 0.3rem 0.7rem;
   cursor: pointer;
+  transition: background var(--t-base), border-color var(--t-base);
+  flex-shrink: 0;
 }
 
-/* ── Screen frame ──────────────────────────────────────────────── */
+.mini-exit-btn:hover {
+  background: rgba(255, 89, 94, 0.22);
+  border-color: rgba(255, 89, 94, 0.7);
+}
+
+/* ── Screen frame / bezel ───────────────────────────────────────────────────── */
 .screen-frame {
   position: relative;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   background: #000;
+  border: 3px solid #151022;
+  box-shadow:
+    inset 0 0 30px rgba(0, 0, 0, 0.9),
+    inset 0 0 2px  rgba(0, 245, 212, 0.12),
+    0 0 0 1px rgba(0, 245, 212, 0.07),
+    var(--shadow-neon),
+    var(--shadow-lg);
 }
 
+body.game-active .screen-frame {
+  border-color: #080614;
+  box-shadow:
+    inset 0 0 40px rgba(0, 0, 0, 0.95),
+    0 0 50px rgba(0, 245, 212, 0.25),
+    0 0 100px rgba(0, 245, 212, 0.08);
+}
+
+/* ── Game canvas ────────────────────────────────────────────────────────────── */
 #gameCanvas {
-  width: 95%;
+  width: 100%;
   max-width: 720px;
   aspect-ratio: 4 / 3;
   image-rendering: pixelated;
-  margin: auto;
+  image-rendering: crisp-edges;
   display: block;
   background: #050505;
   touch-action: none;
@@ -131,14 +291,32 @@ body.game-active #gameCanvas {
   margin: 0 auto;
 }
 
-/* ── Cartridge overlay ─────────────────────────────────────────── */
+/* ── CRT scanline overlay ───────────────────────────────────────────────────── */
+.scanline-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-base);
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent        0px,
+    transparent        3px,
+    rgba(0, 0, 0, 0.07) 3px,
+    rgba(0, 0, 0, 0.07) 4px
+  );
+  mix-blend-mode: multiply;
+}
+
+/* ── Cartridge overlay ──────────────────────────────────────────────────────── */
 .cartridge-overlay {
   position: absolute;
   inset: 0;
   pointer-events: none;
   display: none;
   place-items: center;
-  background: rgba(6, 5, 16, 0.86);
+  background: rgba(6, 4, 16, 0.92);
+  backdrop-filter: blur(3px);
+  z-index: var(--z-overlay);
 }
 
 .cartridge-overlay.is-active {
@@ -149,77 +327,103 @@ body.game-active #gameCanvas {
   position: absolute;
   width: 180px;
   height: 18px;
-  border-radius: 6px;
-  background: #1a1a1a;
+  border-radius: var(--radius-sm);
+  background: #0c0c0c;
   top: 38%;
-  box-shadow: inset 0 0 8px #000;
+  box-shadow:
+    inset 0 0 12px #000,
+    inset 0 2px 4px rgba(0, 245, 212, 0.08);
+  border: 1px solid #252525;
 }
 
 .cartridge-body {
   width: 120px;
   height: 86px;
-  border-radius: 9px;
-  background: linear-gradient(180deg, #696380, #2e2a3f);
-  border: 2px solid #9191ae;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(160deg, #7a6fa0, #2e2a3f);
+  border: 2px solid rgba(180, 170, 220, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    var(--shadow-md);
   transform: translateY(-180px);
+  position: relative;
+}
+
+.cartridge-body::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  height: 12px;
+  background: #18162a;
+  border-radius: 2px 2px 0 0;
 }
 
 .cartridge-overlay.is-active .cartridge-body {
-  animation: insertCart 1s ease forwards;
+  animation: insertCart 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 .cartridge-label {
   margin-top: 170px;
-  font-size: 0.58rem;
-  color: var(--accent);
+  font-size: 0.62rem;
+  color: var(--neon);
+  text-shadow: 0 0 14px rgba(0, 245, 212, 0.85);
+  letter-spacing: 0.08em;
+  animation: pulse 1s ease infinite;
 }
 
-/* ── Exit overlay ──────────────────────────────────────────────── */
+/* ── Exit fullscreen overlay ────────────────────────────────────────────────── */
 .exit-overlay {
   position: absolute;
   inset: 0;
   border: none;
-  background: rgba(12, 11, 18, 0.6);
-  color: #d9fef9;
-  font-size: 0.6rem;
-  z-index: 4;
+  background: linear-gradient(to bottom, transparent 60%, rgba(0, 0, 0, 0.72) 100%);
+  color: rgba(255, 255, 255, 0.88);
+  font-family: inherit;
+  font-size: 0.62rem;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: 0.8rem;
+  padding-bottom: 1.2rem;
   cursor: pointer;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.9);
 }
 
 .exit-overlay[hidden] {
   display: none;
 }
 
-/* ── Game actions / utility buttons ────────────────────────────── */
+/* ── Game actions ───────────────────────────────────────────────────────────── */
 .game-actions {
-  margin-top: 0.6rem;
+  margin-top: var(--space-sm);
   display: flex;
-  gap: 0.4rem;
+  gap: var(--space-xs);
   flex-wrap: wrap;
 }
 
 .utility-buttons button {
-  padding: 6px 12px;
-  font-size: 14px;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: 0.58rem;
 }
 
-/* ── Library toggle row ────────────────────────────────────────── */
+/* ── Library toggle row ─────────────────────────────────────────────────────── */
 .library-toggle-row {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--space-sm);
   flex-wrap: wrap;
-  padding: 0 0.2rem;
+  padding: 0 var(--space-xs);
 }
 
-/* ── Library drawer ────────────────────────────────────────────── */
+/* ── Library panel ──────────────────────────────────────────────────────────── */
 .library-panel {
   background: var(--panel);
-  border-radius: 10px;
-  padding: 0.7rem;
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  border: 1px solid var(--border);
+  animation: slideDown 0.25s ease both;
 }
 
 .library-panel[hidden] {
@@ -227,186 +431,266 @@ body.game-active #gameCanvas {
 }
 
 .recent-list {
-  display: grid;
-  gap: 0.35rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
   list-style: none;
   padding: 0;
-  margin: 0 0 0.6rem;
+  margin: 0 0 var(--space-md);
 }
 
 .recent-pill {
-  background: rgba(0, 245, 212, 0.12);
-  border: 1px solid rgba(0, 245, 212, 0.3);
-  border-radius: 999px;
-  padding: 0.35rem 0.55rem;
-  font-size: 0.52rem;
+  background: var(--neon-dim);
+  border: 1px solid rgba(0, 245, 212, 0.22);
+  border-radius: var(--radius-pill);
+  padding: 0.3rem 0.65rem;
+  font-size: 0.55rem;
+  color: var(--neon);
+  cursor: default;
+  transition: background var(--t-base);
 }
 
 .library-list {
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 0.55rem;
-  max-height: 300px;
-  overflow: auto;
+  font-size: 0.58rem;
+  max-height: 320px;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: grid;
-  gap: 0.5rem;
+  gap: var(--space-sm);
+  scrollbar-width: thin;
+  scrollbar-color: var(--panel-2) transparent;
 }
+
+.library-list::-webkit-scrollbar         { width: 4px; }
+.library-list::-webkit-scrollbar-track   { background: transparent; }
+.library-list::-webkit-scrollbar-thumb   { background: var(--panel-2); border-radius: 2px; }
 
 .library-card {
   display: grid;
-  grid-template-columns: 64px 1fr;
-  gap: 0.5rem;
+  grid-template-columns: 56px 1fr;
+  gap: var(--space-sm);
   align-items: center;
-  background: rgba(255, 255, 255, 0.04);
-  padding: 0.5rem;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: var(--space-sm);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  transition:
+    background var(--t-base),
+    border-color var(--t-base),
+    transform var(--t-fast);
+}
+
+.library-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(0, 245, 212, 0.2);
+  transform: translateX(2px);
 }
 
 .library-art {
-  width: 64px;
-  height: 64px;
-  border-radius: 6px;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-sm);
   object-fit: cover;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(247, 247, 255, 0.15);
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border);
 }
 
 .library-placeholder {
   display: grid;
   place-items: center;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.48rem;
+  color: var(--text-muted);
+  font-size: 0.5rem;
+  text-align: center;
 }
 
 .library-meta strong {
   display: block;
-  line-height: 1.5;
+  line-height: 1.6;
+  font-size: 0.6rem;
 }
 
 .library-meta small {
-  opacity: 0.8;
+  opacity: 0.65;
   display: block;
   margin-top: 0.2rem;
+  font-size: 0.5rem;
 }
 
 .library-actions {
   display: flex;
-  gap: 0.35rem;
-  margin-top: 0.4rem;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
 }
 
-/* ── Buttons ───────────────────────────────────────────────────── */
+/* ── Shared button base ─────────────────────────────────────────────────────── */
 .action-btn,
 .file-input-label {
   cursor: pointer;
-  border: 1px solid rgba(247, 247, 255, 0.25);
-  border-radius: 999px;
-  padding: 0.5rem 0.8rem;
-  font-size: 0.52rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 0.45rem 0.9rem;
+  font-size: 0.58rem;
   font-family: inherit;
   color: var(--text);
   background: var(--panel-2);
   -webkit-user-select: none;
   user-select: none;
   touch-action: manipulation;
+  transition:
+    background var(--t-base),
+    border-color var(--t-base),
+    box-shadow var(--t-base),
+    transform var(--t-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .action-btn:hover,
 .file-input-label:hover {
-  background: #3a2d61;
+  background: var(--panel-hover);
+  border-color: var(--border-hover);
+}
+
+.action-btn:active {
+  transform: translateY(1px);
+}
+
+.file-input-label:hover {
+  box-shadow: 0 0 12px var(--neon-dim);
+  border-color: rgba(0, 245, 212, 0.3);
 }
 
 .warning {
-  border-color: var(--warning);
+  border-color: rgba(255, 89, 94, 0.4);
+  color: var(--warning);
 }
 
-.library-item button {
+.warning:hover {
+  border-color: rgba(255, 89, 94, 0.7);
+  background: rgba(255, 89, 94, 0.1);
+}
+
+/* Library action buttons */
+.library-actions button {
   cursor: pointer;
-  border: none;
-  padding: 0.35rem 0.6rem;
-  border-radius: 999px;
-  background: #34285a;
+  border: 1px solid var(--border);
+  padding: 0.28rem 0.55rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--text);
   font-family: inherit;
   font-size: 0.52rem;
+  transition: background var(--t-base), border-color var(--t-base);
 }
 
-/* ── Main container (flex column) ──────────────────────────────── */
-.main-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+.library-actions button:first-child {
+  border-color: rgba(0, 245, 212, 0.28);
+  color: var(--neon);
 }
 
-/* ── Touch controls ────────────────────────────────────────────── */
+.library-actions button:first-child:hover {
+  background: rgba(0, 245, 212, 0.1);
+}
+
+.library-actions button:last-child {
+  border-color: rgba(255, 89, 94, 0.28);
+  color: var(--warning);
+}
+
+.library-actions button:last-child:hover {
+  background: rgba(255, 89, 94, 0.1);
+}
+
+/* ── Touch controls section ─────────────────────────────────────────────────── */
 .controls-section {
-  width: 95%;
-  max-width: 720px;
-  margin-top: 10px;
-  border-top: 1px solid rgba(247, 247, 255, 0.15);
+  width: 100%;
+  max-width: 620px;
+  padding: var(--space-sm) var(--space-sm) var(--space-lg);
+  border-top: 1px solid rgba(0, 245, 212, 0.07);
+  background: linear-gradient(180deg, rgba(14, 11, 24, 0.55) 0%, rgba(7, 5, 15, 0.75) 100%);
 }
 
 .controller {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  padding: var(--space-md) var(--space-xl);
   width: 100%;
 }
 
+/* ── Touch button base ──────────────────────────────────────────────────────── */
 .touch-btn {
   cursor: pointer;
-  border: 1px solid rgba(247, 247, 255, 0.25);
-  border-radius: 999px;
-  padding: 0.5rem 0.8rem;
-  font-size: 0.56rem;
+  border: 1px solid rgba(247, 247, 255, 0.12);
+  font-family: inherit;
   color: var(--text);
   background: var(--panel-2);
-  width: 66px;
-  min-height: 46px;
   touch-action: none;
   -webkit-user-select: none;
   user-select: none;
-  transition: transform 0.08s ease, background 0.15s ease;
+  transition:
+    transform var(--t-fast),
+    background var(--t-base),
+    box-shadow var(--t-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .touch-btn.is-pressed {
-  transform: translateY(2px) scale(0.98);
-  background: #3f2f6d;
+  transform: translateY(2px) scale(0.96);
+  background: rgba(55, 40, 100, 0.9);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.55);
 }
 
+/* ── D-pad ──────────────────────────────────────────────────────────────────── */
 .dpad {
   display: grid;
-  grid-template-columns: 60px 60px 60px;
-  grid-template-rows: 60px 60px 60px;
-  gap: 0;
+  grid-template-columns: 52px 52px 52px;
+  grid-template-rows:    52px 52px 52px;
+  gap: 2px;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.55));
 }
 
 .dpad button {
-  background: #3a3a3a;
-  border-radius: 12px;
+  background: linear-gradient(160deg, #383345 0%, #222030 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 52px;
+  height: 52px;
+  font-size: 0.72rem;
+  color: rgba(247, 247, 255, 0.65);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 3px 8px rgba(0, 0, 0, 0.45);
+  transition:
+    background var(--t-fast),
+    box-shadow var(--t-fast),
+    transform var(--t-fast);
 }
 
-.dpad-up    { grid-area: 1 / 2; }
-.dpad-left  { grid-area: 2 / 1; }
-.dpad-right { grid-area: 2 / 3; }
-.dpad-down  { grid-area: 3 / 2; }
-
-.action-cluster {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(64px, 76px));
-  gap: 0.4rem;
-  align-content: center;
+.dpad button:active,
+.dpad button.is-pressed {
+  background: linear-gradient(160deg, #241f32 0%, #151320 100%);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.65);
+  transform: translateY(1px);
 }
 
-/* ── ABXY diamond layout ───────────────────────────────────────── */
+.dpad-up    { grid-area: 1 / 2; border-radius: var(--radius-sm) var(--radius-sm) 2px 2px; }
+.dpad-left  { grid-area: 2 / 1; border-radius: var(--radius-sm) 2px 2px var(--radius-sm); }
+.dpad-right { grid-area: 2 / 3; border-radius: 2px var(--radius-sm) var(--radius-sm) 2px; }
+.dpad-down  { grid-area: 3 / 2; border-radius: 2px 2px var(--radius-sm) var(--radius-sm); }
+
+/* ── ABXY action buttons ────────────────────────────────────────────────────── */
 .abxy {
   display: grid;
-  grid-template-columns: repeat(3, 60px);
-  grid-template-rows: repeat(3, 60px);
-  gap: 10px;
+  grid-template-columns: repeat(3, 56px);
+  grid-template-rows:    repeat(3, 56px);
+  gap: 6px;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.55));
 }
 
 .abxy button:nth-child(1) { grid-column: 2; grid-row: 1; } /* Y */
@@ -414,43 +698,117 @@ body.game-active #gameCanvas {
 .abxy button:nth-child(3) { grid-column: 3; grid-row: 2; } /* B */
 .abxy button:nth-child(4) { grid-column: 2; grid-row: 3; } /* A */
 
-/* ── Arcade-style controller button ────────────────────────────── */
 .controller-btn {
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
-  background: #3b3b3b;
-  box-shadow:
-    inset 0 -4px 0 rgba(0, 0, 0, 0.5),
-    0 3px 6px rgba(0, 0, 0, 0.5);
-  color: white;
+  font-family: inherit;
   font-weight: bold;
-  font-size: 18px;
-  border: none;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.94);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  cursor: pointer;
+  transition:
+    transform var(--t-fast),
+    box-shadow var(--t-fast),
+    filter var(--t-fast);
 }
 
-/* ── Start / Select buttons ─────────────────────────────────────── */
+/* Color-coded ABXY */
+.abxy button[data-control="y"] {
+  background: radial-gradient(circle at 35% 35%, #3ddc84, var(--btn-y));
+  box-shadow:
+    inset 0 -3px 0 rgba(0, 0, 0, 0.45),
+    0 4px 12px rgba(45, 198, 83, 0.4);
+  border-color: rgba(45, 198, 83, 0.4);
+}
+
+.abxy button[data-control="x"] {
+  background: radial-gradient(circle at 35% 35%, #6885f5, var(--btn-x));
+  box-shadow:
+    inset 0 -3px 0 rgba(0, 0, 0, 0.45),
+    0 4px 12px rgba(67, 97, 238, 0.4);
+  border-color: rgba(67, 97, 238, 0.4);
+}
+
+.abxy button[data-control="b"] {
+  background: radial-gradient(circle at 35% 35%, #f5c580, var(--btn-b));
+  box-shadow:
+    inset 0 -3px 0 rgba(0, 0, 0, 0.45),
+    0 4px 12px rgba(244, 162, 97, 0.4);
+  border-color: rgba(244, 162, 97, 0.4);
+}
+
+.abxy button[data-control="a"] {
+  background: radial-gradient(circle at 35% 35%, #ff6e74, var(--btn-a));
+  box-shadow:
+    inset 0 -3px 0 rgba(0, 0, 0, 0.45),
+    0 4px 12px rgba(230, 57, 70, 0.4);
+  border-color: rgba(230, 57, 70, 0.4);
+}
+
+.controller-btn:active,
+.controller-btn.is-pressed {
+  transform: translateY(2px) scale(0.95);
+  filter: brightness(0.82);
+}
+
+/* Override per-button glow when pressed (higher specificity than data-control rules) */
+.abxy button[data-control]:active,
+.abxy button[data-control].is-pressed {
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
+}
+
+/* ── Start / Select ─────────────────────────────────────────────────────────── */
 .start-select {
-  margin-top: 12px;
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: var(--space-md);
+  padding: var(--space-xs) 0 var(--space-sm);
 }
 
 .start-select button {
-  width: 50px;
-  height: 30px;
-  font-size: 12px;
+  height: 36px;
+  min-width: 72px;
+  font-size: 0.55rem;
+  font-family: inherit;
+  border-radius: var(--radius-pill);
+  padding: 0 var(--space-md);
+  background: linear-gradient(160deg, #2c2645, #1c192e);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  touch-action: none;
+  transition:
+    background var(--t-base),
+    box-shadow var(--t-base),
+    transform var(--t-fast);
 }
 
-/* ── Focus ─────────────────────────────────────────────────────── */
+.start-select button:hover {
+  background: linear-gradient(160deg, #38305a, #26203e);
+}
+
+.start-select button:active,
+.start-select button.is-pressed {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.55);
+}
+
+/* ── Focus styles ───────────────────────────────────────────────────────────── */
 button:focus-visible,
 .file-input-label:focus-visible {
   outline: 2px solid var(--neon);
-  outline-offset: 2px;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px rgba(0, 245, 212, 0.15);
 }
 
-/* ── Animations ────────────────────────────────────────────────── */
+/* ── Animations ─────────────────────────────────────────────────────────────── */
 @keyframes insertCart {
   from { transform: translateY(-180px); }
   to   { transform: translateY(-12px); }
@@ -466,25 +824,91 @@ button:focus-visible,
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(0.8); opacity: 0.65; }
-  50%       { transform: scale(1); opacity: 1; }
+  0%, 100% { opacity: 0.6; transform: scale(0.97); }
+  50%       { opacity: 1;   transform: scale(1); }
 }
 
-/* ── Responsive landscape layout ──────────────────────────────── */
+@keyframes ledPulse {
+  0%, 100% { opacity: 0.65; }
+  50%       { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive: landscape ──────────────────────────────────────────────────── */
 @media (orientation: landscape) {
   .main-container {
     flex-direction: row;
     justify-content: center;
-    align-items: center;
-    gap: 30px;
+    align-items: flex-start;
+    gap: var(--space-xl);
+  }
+
+  .console-body {
+    flex: 1;
+    max-width: 60%;
   }
 
   #gameCanvas {
-    width: 60vw;
-    max-width: 900px;
+    width: 100%;
   }
 
   .controls-section {
     width: auto;
+    flex-shrink: 0;
+    border-top: none;
+    border-left: 1px solid rgba(0, 245, 212, 0.07);
+    min-width: 220px;
+    align-self: center;
+    padding-top: 0;
+  }
+
+  .controller {
+    flex-direction: column;
+    gap: var(--space-xl);
+    padding: var(--space-lg);
+  }
+
+  .start-select {
+    flex-direction: column;
+    gap: var(--space-sm);
+    align-items: center;
   }
 }
+
+/* ── Responsive: small portrait ─────────────────────────────────────────────── */
+@media (max-width: 380px) {
+  .dpad {
+    grid-template-columns: 46px 46px 46px;
+    grid-template-rows:    46px 46px 46px;
+  }
+
+  .dpad button {
+    width: 46px;
+    height: 46px;
+  }
+
+  .abxy {
+    grid-template-columns: repeat(3, 50px);
+    grid-template-rows:    repeat(3, 50px);
+  }
+
+  .controller-btn {
+    width: 50px;
+    height: 50px;
+  }
+
+  .controller {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .start-select button {
+    min-width: 60px;
+    height: 32px;
+    font-size: 0.5rem;
+  }
+}
+
