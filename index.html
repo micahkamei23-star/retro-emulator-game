@@ -10,6 +10,36 @@
 </head>
 <body>
   <div class="app-shell main-container ui-visible">
+
+    <!-- ── Theme Picker ──────────────────────────────────────────── -->
+    <div class="theme-picker" role="group" aria-label="Select visual theme">
+      <input type="radio" name="emu-theme" id="theme-gameboy"  class="theme-radio" checked />
+      <input type="radio" name="emu-theme" id="theme-switch"   class="theme-radio" />
+      <input type="radio" name="emu-theme" id="theme-vita"     class="theme-radio" />
+      <input type="radio" name="emu-theme" id="theme-arcade"   class="theme-radio" />
+      <input type="radio" name="emu-theme" id="theme-minimal"  class="theme-radio" />
+      <label for="theme-gameboy"  class="theme-label" title="Game Boy">GB</label>
+      <label for="theme-switch"   class="theme-label" title="Nintendo Switch">SW</label>
+      <label for="theme-vita"     class="theme-label" title="PS Vita">VT</label>
+      <label for="theme-arcade"   class="theme-label" title="Retro Arcade">ARC</label>
+      <label for="theme-minimal"  class="theme-label" title="Minimal Pro">MIN</label>
+    </div>
+
+    <!-- ── Console Header: logo + speakers + LED ─────────────────── -->
+    <header class="console-header" aria-hidden="true">
+      <div class="speaker-grille">
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <div class="console-logo">RETRO<em>EMU</em></div>
+      <div class="header-right">
+        <div class="power-led"></div>
+        <div class="speaker-grille">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── Main content ──────────────────────────────────────────── -->
     <main class="console-body">
       <section class="screen-panel">
         <div class="status-row">
@@ -19,14 +49,17 @@
           <button id="exitGameBtn" class="mini-exit-btn" type="button" hidden>Exit Game</button>
         </div>
 
-        <div class="screen-frame">
-          <canvas id="gameCanvas" width="256" height="240" aria-label="Emulator screen"></canvas>
-          <div id="cartridgeOverlay" class="cartridge-overlay" aria-hidden="true">
-            <div class="cartridge-slot"></div>
-            <div class="cartridge-body"></div>
-            <p id="cartridgeLabel" class="cartridge-label">INSERTING CARTRIDGE...</p>
+        <div class="screen-bezel">
+          <div class="screen-frame">
+            <canvas id="gameCanvas" width="256" height="240" aria-label="Emulator screen"></canvas>
+            <div class="screen-scanline-overlay" aria-hidden="true"></div>
+            <div id="cartridgeOverlay" class="cartridge-overlay" aria-hidden="true">
+              <div class="cartridge-slot"></div>
+              <div class="cartridge-body"></div>
+              <p id="cartridgeLabel" class="cartridge-label">INSERTING CARTRIDGE...</p>
+            </div>
+            <button id="exitFullscreenOverlay" class="exit-overlay" type="button" hidden>Tap to exit game</button>
           </div>
-          <button id="exitFullscreenOverlay" class="exit-overlay" type="button" hidden>Tap to exit game</button>
         </div>
 
         <div class="game-actions utility-buttons">
@@ -48,24 +81,41 @@
       </aside>
     </main>
 
+    <!-- ── Shoulder buttons (cosmetic) ───────────────────────────── -->
+    <div class="shoulder-row" aria-hidden="true">
+      <div class="shoulder-btn shoulder-left">L</div>
+      <div class="shoulder-btn shoulder-right">R</div>
+    </div>
+
+    <!-- ── Touch Controls ────────────────────────────────────────── -->
     <section class="controls-section" aria-label="Touch controls">
       <div class="controller">
-        <div class="dpad">
-          <button data-control="up" class="touch-btn dpad-up">▲</button>
-          <button data-control="left" class="touch-btn dpad-left">◀</button>
-          <button data-control="right" class="touch-btn dpad-right">▶</button>
-          <button data-control="down" class="touch-btn dpad-down">▼</button>
+
+        <div class="dpad-pod">
+          <div class="dpad">
+            <button data-control="up"    class="touch-btn dpad-btn dpad-up">▲</button>
+            <button data-control="left"  class="touch-btn dpad-btn dpad-left">◀</button>
+            <button data-control="right" class="touch-btn dpad-btn dpad-right">▶</button>
+            <button data-control="down"  class="touch-btn dpad-btn dpad-down">▼</button>
+          </div>
         </div>
-        <div class="abxy">
-          <button data-control="y" class="touch-btn controller-btn">Y</button>
-          <button data-control="x" class="touch-btn controller-btn">X</button>
-          <button data-control="b" class="touch-btn controller-btn">B</button>
-          <button data-control="a" class="touch-btn controller-btn">A</button>
+
+        <div class="center-controls">
+          <div class="start-select">
+            <button data-control="select" class="touch-btn utility">SELECT</button>
+            <button data-control="start"  class="touch-btn utility">START</button>
+          </div>
         </div>
-      </div>
-      <div class="start-select">
-        <button data-control="select" class="touch-btn utility">Select</button>
-        <button data-control="start" class="touch-btn utility">Start</button>
+
+        <div class="abxy-pod">
+          <div class="abxy">
+            <button data-control="y" class="touch-btn controller-btn btn-y">Y</button>
+            <button data-control="x" class="touch-btn controller-btn btn-x">X</button>
+            <button data-control="b" class="touch-btn controller-btn btn-b">B</button>
+            <button data-control="a" class="touch-btn controller-btn btn-a">A</button>
+          </div>
+        </div>
+
       </div>
     </section>
   </div>
