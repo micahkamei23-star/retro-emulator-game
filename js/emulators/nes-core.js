@@ -98,6 +98,14 @@ export default class NESCore extends EmulatorCoreInterface {
     this.nes.loadROM(binary);
   }
 
+  reset() {
+    if (this.nes) this.nes.reset();
+  }
+
+  getFrameBuffer() {
+    return this.frameBuffer;
+  }
+
   runFrame() {
     Object.entries(BUTTON_MAP).forEach(([button, buttonId]) => {
       if (this.inputState[button]) {
@@ -108,6 +116,11 @@ export default class NESCore extends EmulatorCoreInterface {
     });
 
     this.nes.frame();
+
+    if (!this.imageData) {
+      console.warn('[NESCore] imageData is null — skipping render');
+      return;
+    }
     this.ctx.putImageData(this.imageData, 0, 0);
   }
 

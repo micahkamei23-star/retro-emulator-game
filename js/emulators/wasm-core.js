@@ -61,6 +61,11 @@ export default class WasmCore extends EmulatorCoreInterface {
     }
   }
 
+  getFrameBuffer() {
+    if (!this.imageData) return null;
+    return this.imageData.data;
+  }
+
   runFrame() {
     BUTTONS.forEach((button, index) => {
       if (this.exports.set_button) {
@@ -77,6 +82,11 @@ export default class WasmCore extends EmulatorCoreInterface {
     const ptr = this.exports.get_frame_ptr();
     const size = this.exports.get_frame_size();
     if (!ptr || !size) return;
+
+    if (!this.imageData) {
+      console.warn('[WasmCore] imageData is null — skipping render');
+      return;
+    }
 
     const frame = new Uint8Array(this.memory.buffer, ptr, size);
     this.imageData.data.set(frame.subarray(0, this.imageData.data.length));

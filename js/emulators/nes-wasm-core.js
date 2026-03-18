@@ -50,6 +50,15 @@ export default class NESWasmCore extends EmulatorCoreInterface {
     console.log('[NESWasmCore] ROM loaded');
   }
 
+  reset() {
+    if (this.nes) this.nes.reset();
+  }
+
+  getFrameBuffer() {
+    if (!this.imageData) return null;
+    return this.imageData.data;
+  }
+
   runFrame() {
     // Build button bitmask from input state
     let mask = 0;
@@ -66,9 +75,14 @@ export default class NESWasmCore extends EmulatorCoreInterface {
     // Copy the RGBA framebuffer from WASM memory directly into ImageData
     this.nes.update_framebuffer();
     const ptr = this.nes.framebuffer_ptr();
+
+    if (!this.imageData) {
+      console.warn('[NESWasmCore] imageData is null — skipping render');
+      return;
+    }
+
     const pixels = new Uint8ClampedArray(this.wasm.memory.buffer, ptr, FRAMEBUFFER_SIZE);
     this.imageData.data.set(pixels);
-
     this.ctx.putImageData(this.imageData, 0, 0);
   }
 

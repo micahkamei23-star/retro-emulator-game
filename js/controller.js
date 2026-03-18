@@ -186,9 +186,32 @@ class Controller {
   }
 
   bindGamepadPolling() {
+    // Standard gamepad button mapping
+    // https://w3c.github.io/gamepad/#remapping
+    const buttonMap = [
+      /* 0 */ 'a',
+      /* 1 */ 'b',
+      /* 2 */ 'x',
+      /* 3 */ 'y',
+      /* 4 */ null, // L bumper
+      /* 5 */ null, // R bumper
+      /* 6 */ null, // L trigger
+      /* 7 */ null, // R trigger
+      /* 8 */ 'select',
+      /* 9 */ 'start',
+      /* 10 */ null, // L stick
+      /* 11 */ null, // R stick
+      /* 12 */ 'up',
+      /* 13 */ 'down',
+      /* 14 */ 'left',
+      /* 15 */ 'right',
+    ];
+
     const poll = () => {
-      const [pad] = navigator.getGamepads ? navigator.getGamepads() : [];
+      const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+      const pad = gamepads[0] || gamepads[1] || gamepads[2] || gamepads[3];
       if (pad) {
+        // Axis-based d-pad
         const left = pad.axes[0] < -0.4;
         const right = pad.axes[0] > 0.4;
         const up = pad.axes[1] < -0.4;
@@ -200,9 +223,25 @@ class Controller {
           { control: 'up', pressed: up },
           { control: 'down', pressed: down },
         ].forEach(({ control, pressed }) => this.emit(control, pressed, 'gamepad'));
+
+        // Button-based mapping
+        for (let i = 0; i < pad.buttons.length && i < buttonMap.length; i += 1) {
+          const control = buttonMap[i];
+          if (!control) continue;
+          const pressed = pad.buttons[i].pressed;
+          this.emit(control, pressed, 'gamepad');
+        }
       }
       requestAnimationFrame(poll);
     };
+
+    // Start polling only when a gamepad is detected
+    window.addEventListener('gamepadconnected', () => {
+      console.log('[Controller] Gamepad connected');
+    });
+    window.addEventListener('gamepaddisconnected', () => {
+      console.log('[Controller] Gamepad disconnected');
+    });
 
     poll();
   }
