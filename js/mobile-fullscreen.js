@@ -56,6 +56,16 @@ export default class MobileFullscreen {
     this.overlay.hidden = false;
     this.overlay.classList.remove('controls-hidden');
 
+    // Ensure canvas is visible and has correct resolution
+    const canvas = document.getElementById('gameCanvas');
+    if (canvas) {
+      canvas.style.display = 'block';
+      canvas.style.opacity = '1';
+      // Ensure internal resolution is explicitly set (not just CSS-scaled)
+      if (!canvas.width || canvas.width < 2) canvas.width = 256;
+      if (!canvas.height || canvas.height < 2) canvas.height = 240;
+    }
+
     // Fullscreen
     if (document.fullscreenEnabled && !document.fullscreenElement) {
       try {
@@ -150,6 +160,10 @@ export default class MobileFullscreen {
         }
         el.classList.add('is-pressed');
         this.controller.emit(control, true, 'touch');
+        // Haptic feedback on button press
+        if (navigator.vibrate) {
+          navigator.vibrate(12);
+        }
       }, { passive: false });
 
       el.addEventListener('touchend', (e) => {

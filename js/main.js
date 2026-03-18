@@ -61,11 +61,26 @@ document.addEventListener('DOMContentLoaded', () => {
   // ─── Helpers ─────────────────────────────────────────────────────────────────
   const setStatus = (msg) => { activeRomLabel.textContent = `ROM: ${msg}`; };
 
+  function setCanvasResolution(w, h) {
+    if (canvas.width !== w) canvas.width = w;
+    if (canvas.height !== h) canvas.height = h;
+  }
+
+  const SYSTEM_RESOLUTION = {
+    nes: [256, 240],
+    gb: [160, 144],
+    gbc: [160, 144],
+    gba: [240, 160],
+    snes: [256, 224],
+  };
+
   const setCanvasAspectRatio = (system) => {
     document.body.style.setProperty(
       '--game-aspect',
       SYSTEM_ASPECT_RATIO[system] || '4 / 3',
     );
+    const res = SYSTEM_RESOLUTION[system];
+    if (res) setCanvasResolution(res[0], res[1]);
   };
 
   function setGameMode(active) {
