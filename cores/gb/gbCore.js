@@ -35,6 +35,7 @@ export default class GBCore extends EmulatorCoreInterface {
     this.module = null;
     this.e = 0;
     this.romDataPtr = 0;
+    this.joypadBufferPtr = 0;
     this._romBytes = null;
     this.imageData = this.ctx.createImageData(SCREEN_WIDTH, SCREEN_HEIGHT);
   }
@@ -55,6 +56,10 @@ export default class GBCore extends EmulatorCoreInterface {
     if (this.e) {
       this.module._emulator_delete(this.e);
       this.e = 0;
+    }
+    if (this.joypadBufferPtr) {
+      this.module._joypad_delete(this.joypadBufferPtr);
+      this.joypadBufferPtr = 0;
     }
     if (this.romDataPtr) {
       this.module._free(this.romDataPtr);
@@ -79,6 +84,15 @@ export default class GBCore extends EmulatorCoreInterface {
     if (this.e === 0) {
       throw new Error('[GBCore] Invalid ROM or failed to create emulator instance');
     }
+
+    // Register the default joypad callback so that _set_joyp_* calls are
+    // forwarded to the emulator.  Without this the static button state
+    // modified by _set_joyp_* is never read by the core.
+    this.joypadBufferPtr = this.module._joypad_new();
+    this.module._emulator_set_default_joypad_callback(
+      this.e,
+      this.joypadBufferPtr,
+    );
   }
 
   reset() {
@@ -163,6 +177,10 @@ export default class GBCore extends EmulatorCoreInterface {
     if (this.module && this.e) {
       this.module._emulator_delete(this.e);
       this.e = 0;
+    }
+    if (this.module && this.joypadBufferPtr) {
+      this.module._joypad_delete(this.joypadBufferPtr);
+      this.joypadBufferPtr = 0;
     }
     if (this.module && this.romDataPtr) {
       this.module._free(this.romDataPtr);
