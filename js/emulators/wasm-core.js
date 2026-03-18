@@ -11,6 +11,8 @@ export default class WasmCore extends EmulatorCoreInterface {
     this.memory = null;
     this.width = config.width;
     this.height = config.height;
+    this.canvas.width = this.width;
+    this.canvas.height = this.height;
     this.imageData = this.ctx.createImageData(this.width, this.height);
   }
 
