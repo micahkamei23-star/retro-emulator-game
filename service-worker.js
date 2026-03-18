@@ -1,4 +1,4 @@
-const SW_VERSION = 'v8';
+const SW_VERSION = 'v9';
 const CACHE_PREFIX = 'retro-emulator-cache';
 const CACHE_NAME = `${CACHE_PREFIX}-${SW_VERSION}`;
 
@@ -14,15 +14,15 @@ const APP_SHELL = [
   './js/storage.js',
   './js/emulators/core-interface.js',
   './js/emulators/script-loader.js',
-  './js/emulators/nes-core.js',
+  './js/emulators/nes-wasm-core.js',
   './js/emulators/gb-core.js',
   './js/emulators/wasm-core.js',
   './service-worker.js',
 ];
 
 const CORE_ASSETS = [
-  'https://unpkg.com/jsnes/dist/jsnes.min.js',
-  './cores/jsnes/jsnes.min.js',
+  './cores/nes-wasm/nes_wasm.js',
+  './cores/nes-wasm/nes_wasm_bg.wasm',
   './cores/gameboy/gameboy.min.js',
   './cores/mgba/mgba.wasm',
   './cores/snes9x/snes9x.wasm',

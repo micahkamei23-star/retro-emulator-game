@@ -1,14 +1,14 @@
-import NESCore from './emulators/nes-core.js';
+import NESWasmCore from './emulators/nes-wasm-core.js';
 import GameBoyCore from './emulators/gb-core.js';
 import WasmCore from './emulators/wasm-core.js';
 
 const CORE_CONFIG = {
   nes: {
-    label: 'NES (jsnes)',
+    label: 'NES (Rust WASM)',
     systemName: 'NES',
     extensions: ['.nes'],
-    createCore: (canvas) => new NESCore(canvas),
-    assets: ['./cores/jsnes/jsnes.min.js'],
+    createCore: (canvas) => new NESWasmCore(canvas),
+    assets: ['./cores/nes-wasm/nes_wasm_bg.wasm'],
   },
   gb: {
     label: 'Game Boy / Color (GameBoy.js)',
