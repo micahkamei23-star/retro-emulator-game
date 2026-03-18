@@ -1,0 +1,22 @@
+:root{
+  --accent: #4CAF50;
+  --bg: #000000;
+  --control-opacity: 0.92;
+  --device-max-width: 680px;
+  --screen-border-radius: 6px;
+}
+html,body{height:100%;margin:0;background:var(--bg);-webkit-tap-highlight-color: transparent;touch-action:none;overflow:hidden;font-family:system-ui, -apple-system, "Segoe UI", Roboto;}
+#app-root{padding-top:env(safe-area-inset-top);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);padding-bottom:env(safe-area-inset-bottom);height:100%;display:flex;align-items:center;justify-content:center;box-sizing:border-box;}
+#emulator-root{width:calc(min(100vw,var(--device-max-width)));max-width:100%;margin:0 auto;position:relative;touch-action:none;-webkit-user-select:none;user-select:none;overflow:visible;}
+#device-container{position:relative;width:100%;height:calc(100vw * 0.6);max-height:90vh;margin:0 auto;}
+#device-overlay{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:30;image-rendering:crisp-edges;}
+canvas.emu-screen{position:absolute;z-index:10;background:#111;border-radius:var(--screen-border-radius);width:100%;height:100%;display:block;image-rendering:pixelated;-webkit-user-select:none;user-select:none;touch-action:none;}
+#controls-layer{position:absolute;left:0;top:0;width:100%;height:100%;z-index:40;pointer-events:none;}
+.emu-control{position:absolute;transform:translate(-50%,-50%);width:calc(5.5vmin);height:calc(5.5vmin);border-radius:999px;background:rgba(255,255,255,0.06);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;pointer-events:auto;box-shadow:0 6px 18px rgba(0,0,0,0.45), inset 0 -2px 6px rgba(0,0,0,0.25);opacity:var(--control-opacity);-webkit-tap-highlight-color:transparent;touch-action:none;}
+.emu-control.small{width:calc(4vmin);height:calc(4vmin);}
+.emu-control.oval{border-radius:14px;padding:0.2rem 0.6rem;}
+.dpad{width:calc(12vmin);height:calc(12vmin);background:transparent;display:flex;align-items:center;justify-content:center;}
+#settings-panel{position:absolute;right:10px;top:10px;z-index:200;background:rgba(0,0,0,0.6);color:white;padding:10px;border-radius:8px;pointer-events:auto;font-family:system-ui, -apple-system, "Segoe UI", Roboto,"Helvetica Neue";}
+.fs-root{width:100vw !important;height:100vh !important;max-width:none !important;}
+.hidden{display:none !important;}
+canvas{image-rendering:-webkit-optimize-contrast;}
