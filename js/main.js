@@ -2,6 +2,7 @@ import EmulatorLoader from './emulator-loader.js';
 import Controller from './controller.js';
 import StorageManager from './storage.js';
 import { setupRomLoader } from './rom-loader.js';
+import MobileFullscreen from './mobile-fullscreen.js';
 
 const SYSTEM_ASPECT_RATIO = {
   nes: '4 / 3',
@@ -46,9 +47,15 @@ document.addEventListener('DOMContentLoaded', () => {
   let   exitOverlayVisible = false;
 
   // ─── Controller ──────────────────────────────────────────────────────────────
-  new Controller(({ control, pressed }) => {
+  const controller = new Controller(({ control, pressed }) => {
     controllerState[control] = pressed;
     if (activeCore) activeCore.setInput(controllerState);
+  });
+
+  // ─── Mobile Fullscreen ───────────────────────────────────────────────────────
+  const mobileFullscreen = new MobileFullscreen({
+    controller,
+    onExit: () => stopGame(),
   });
 
   // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -226,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setStatus(rom.name);
       setCanvasAspectRatio(rom.system);
       setGameMode(true);
-      await enterFullscreen();
+      await mobileFullscreen.enter();
     } catch (err) {
       console.error('[startRom]', err);
       drawBootScreen('Core failed to load. Check /cores assets.');
@@ -250,6 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
     drawBootScreen();
     setCanvasAspectRatio();
     setGameMode(false);
+    mobileFullscreen.exit();
     await exitFullscreen();
   }
 
@@ -284,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setStatus(file.name);
       setCanvasAspectRatio(system);
       setGameMode(true);
-      enterFullscreen();
+      mobileFullscreen.enter();
     },
   });
 

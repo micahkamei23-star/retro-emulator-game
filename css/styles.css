@@ -1356,3 +1356,234 @@ button:focus-visible,
     aspect-ratio: var(--game-aspect, 4 / 3);
   }
 }
+
+/* ================================================================
+   MOBILE FULLSCREEN MODE
+   ================================================================ */
+
+/* ── Body state: hide everything except canvas + overlay ─────── */
+body.mobile-fullscreen {
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  touch-action: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  background: #000 !important;
+}
+
+body.mobile-fullscreen .theme-picker,
+body.mobile-fullscreen .console-header,
+body.mobile-fullscreen .status-row,
+body.mobile-fullscreen .game-actions,
+body.mobile-fullscreen .library-toggle-row,
+body.mobile-fullscreen .library-panel,
+body.mobile-fullscreen .shoulder-row,
+body.mobile-fullscreen .controls-section,
+body.mobile-fullscreen .screen-bezel,
+body.mobile-fullscreen .exit-overlay {
+  display: none !important;
+}
+
+body.mobile-fullscreen .app-shell {
+  max-width: 100% !important;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  background: #000 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+body.mobile-fullscreen .console-body {
+  width: 100%;
+  height: 100%;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.mobile-fullscreen .screen-panel {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.mobile-fullscreen .screen-bezel {
+  display: none !important;
+}
+
+body.mobile-fullscreen #gameCanvas {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 100vw;
+  max-height: 100vh;
+  max-height: 100dvh;
+  width: auto;
+  height: 100vh;
+  height: 100dvh;
+  aspect-ratio: var(--game-aspect, 4 / 3);
+  z-index: 1;
+  border-radius: 0;
+  background: #000;
+}
+
+/* ── Mobile Control Overlay ──────────────────────────────────── */
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.mobile-overlay[hidden] { display: none; }
+.mobile-overlay.controls-hidden .mobile-joystick-zone,
+.mobile-overlay.controls-hidden .mobile-action-buttons,
+.mobile-overlay.controls-hidden .mobile-center-controls {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Joystick Zone (left side) ───────────────────────────────── */
+.mobile-joystick-zone {
+  position: absolute;
+  left: 2%;
+  bottom: 8%;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: opacity 0.25s ease;
+}
+
+.mobile-joystick-base {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.mobile-joystick-thumb {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.55), rgba(255,255,255,0.2));
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  will-change: transform;
+}
+
+/* ── Action Buttons (right side) ─────────────────────────────── */
+.mobile-action-buttons {
+  position: absolute;
+  right: 3%;
+  bottom: 10%;
+  display: flex;
+  gap: 14px;
+  align-items: flex-end;
+  pointer-events: auto;
+  touch-action: none;
+  transition: opacity 0.25s ease;
+}
+
+.mobile-btn {
+  border: none;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  font-family: var(--font-ui, monospace);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.06s ease, filter 0.06s ease;
+}
+
+.mobile-btn-a,
+.mobile-btn-b {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+.mobile-btn-a {
+  background: radial-gradient(circle at 35% 35%, #ff3050, #cc1030);
+}
+.mobile-btn-b {
+  background: radial-gradient(circle at 35% 35%, #5080ff, #2850cc);
+  margin-bottom: 30px;
+}
+
+.mobile-btn.is-pressed {
+  transform: scale(0.9);
+  filter: brightness(0.75);
+}
+
+/* ── Start / Select (center bottom) ──────────────────────────── */
+.mobile-center-controls {
+  position: absolute;
+  bottom: 3%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 16px;
+  pointer-events: auto;
+  touch-action: none;
+  transition: opacity 0.25s ease;
+}
+
+.mobile-btn-util {
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.mobile-btn-util.is-pressed {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(0.93);
+}
+
+/* ── Exit Button ─────────────────────────────────────────────── */
+.mobile-exit-btn {
+  position: absolute;
+  top: max(8px, env(safe-area-inset-top));
+  right: max(8px, env(safe-area-inset-right));
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.55);
+  color: rgba(255, 255, 255, 0.8);
+  font-family: var(--font-ui, monospace);
+  font-size: 0.5rem;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: none;
+  z-index: 101;
+}
