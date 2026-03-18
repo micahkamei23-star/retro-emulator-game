@@ -46,7 +46,8 @@ const CORE_CONFIG = {
 class EmulatorLoader {
   constructor(canvas) {
     this.canvas = canvas;
-    this.cores = new Map();
+    this.activeEntry = null;
+    this.activeSystem = null;
   }
 
   static listSystems() {
@@ -63,13 +64,23 @@ class EmulatorLoader {
       value.extensions.some((ext) => lowerName.endsWith(ext)))?.[0];
   }
 
+  destroyActive() {
+    if (this.activeEntry) {
+      this.activeEntry.core.destroy();
+      console.log('Core destroyed');
+      this.activeEntry = null;
+      this.activeSystem = null;
+    }
+  }
+
   async loadCore(system) {
     const config = CORE_CONFIG[system];
     if (!config) throw new Error(`Unsupported system: ${system}`);
 
     console.log('Loading core:', system);
 
-    if (this.cores.has(system)) return this.cores.get(system);
+    // Always destroy existing core before creating a new one
+    this.destroyActive();
 
     const core = config.createCore(this.canvas);
     await core.init();
@@ -81,24 +92,22 @@ class EmulatorLoader {
       systemName: config.systemName,
     };
 
-    this.cores.set(system, loaded);
+    this.activeEntry = loaded;
+    this.activeSystem = system;
+    console.log('New core created');
     return loaded;
   }
 
   unloadCore(system) {
     console.log('Unloading core:', system);
-    if (this.cores.has(system)) {
-      this.cores.get(system).core.destroy();
-      this.cores.delete(system);
+    if (this.activeSystem === system) {
+      this.destroyActive();
     }
-    this.currentCore = null;
     console.log('Loader reset');
   }
 
   unloadAll() {
-    this.cores.forEach((entry) => entry.core.destroy());
-    this.cores.clear();
-    this.currentCore = null;
+    this.destroyActive();
     console.log('Loader reset');
   }
 }

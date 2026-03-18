@@ -50,11 +50,9 @@ export function setupRomLoader({
       const romBytes = new Uint8Array(romBuffer);
       console.log('ROM buffer loaded', romBytes.length);
 
+      // loadCore() destroys any previously active core before creating a new one
       const loaded = await loader.loadCore(detected.key);
       console.log('Core loaded', loaded.config.label);
-
-      const currentCore = getCurrentCore?.();
-      if (currentCore && currentCore !== loaded.core) currentCore.stop();
 
       await loaded.core.loadROM(romBytes);
       console.log('ROM loaded into emulator');
