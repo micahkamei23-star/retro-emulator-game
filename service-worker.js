@@ -1,4 +1,4 @@
-const SW_VERSION = 'v10';
+const SW_VERSION = 'v11';
 const CACHE_PREFIX = 'retro-emulator-cache';
 const CACHE_NAME = `${CACHE_PREFIX}-${SW_VERSION}`;
 
@@ -25,12 +25,14 @@ const APP_SHELL = [
   './js/input/joystick.js',
   './js/render/renderer.js',
   './service-worker.js',
+  './cores/gb/gbCore.js',
 ];
 
 const CORE_ASSETS = [
   './cores/nes-wasm/nes_wasm.js',
   './cores/nes-wasm/nes_wasm_bg.wasm',
-  './cores/gameboy/gameboy.min.js',
+  './cores/gb/binjgb.js',
+  './cores/gb/binjgb.wasm',
   './cores/mgba/mgba.wasm',
   './cores/snes9x/snes9x.wasm',
 ];

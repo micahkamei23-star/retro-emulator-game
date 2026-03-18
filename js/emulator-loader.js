@@ -1,5 +1,5 @@
 import NESWasmCore from './emulators/nes-wasm-core.js';
-import GameBoyCore from './emulators/gb-core.js';
+import GBCore from '../cores/gb/gbCore.js';
 import WasmCore from './emulators/wasm-core.js';
 
 const CORE_CONFIG = {
@@ -11,11 +11,11 @@ const CORE_CONFIG = {
     assets: ['./cores/nes-wasm/nes_wasm_bg.wasm'],
   },
   gb: {
-    label: 'Game Boy / Color (GameBoy.js)',
+    label: 'Game Boy / Color (binjgb)',
     systemName: 'Game Boy',
     extensions: ['.gb', '.gbc'],
-    createCore: (canvas) => new GameBoyCore(canvas),
-    assets: ['./cores/gameboy/gameboy.min.js'],
+    createCore: (canvas) => new GBCore(canvas),
+    assets: ['./cores/gb/binjgb.wasm'],
   },
   gba: {
     label: 'Game Boy Advance (mGBA WASM)',
