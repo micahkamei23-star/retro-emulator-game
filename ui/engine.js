@@ -77,6 +77,13 @@ function mapControlNameToInputKey(name){
   }
 }
 
+/* Single global mouseup handler to clear button state (avoids per-button listener leak) */
+function handleGlobalMouseUp(){
+  inputState.A = false; inputState.B = false;
+  inputState.START = false; inputState.SELECT = false;
+}
+window.addEventListener('mouseup', handleGlobalMouseUp);
+
 /* Create control elements from skin config exactly */
 function createControlElements(skinCfg){
   clearControls();
@@ -108,7 +115,6 @@ function createControlElements(skinCfg){
     el.addEventListener('touchend',   (ev)=>{ ev.preventDefault(); setStateOn(false); }, { passive:false });
     el.addEventListener('touchcancel',(ev)=>{ ev.preventDefault(); setStateOn(false); }, { passive:false });
     el.addEventListener('mousedown',  (ev)=>{ ev.preventDefault(); setStateOn(true); }, { passive:false });
-    window.addEventListener('mouseup', (ev)=>{ setStateOn(false); });
   });
 }
 
