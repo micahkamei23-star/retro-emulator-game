@@ -3,6 +3,7 @@ export class EmulatorCoreInterface {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d', { alpha: false });
     this.animationFrameId = null;
+    this.isRunning = false;
     this.inputState = {};
   }
 
@@ -17,6 +18,8 @@ export class EmulatorCoreInterface {
   }
 
   start(onFrame) {
+    if (this.isRunning) return;
+
     let frameCount = 0;
     const loop = () => {
       this.runFrame();
@@ -29,8 +32,9 @@ export class EmulatorCoreInterface {
     };
 
     this.stop();
+    this.isRunning = true;
     this.animationFrameId = requestAnimationFrame(loop);
-    console.log('Starting frame loop');
+    console.log('Frame loop started');
     console.log('Core started');
   }
 
@@ -38,6 +42,10 @@ export class EmulatorCoreInterface {
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
+    }
+    if (this.isRunning) {
+      this.isRunning = false;
+      console.log('Frame loop stopped');
       console.log('Core stopped');
     }
   }
@@ -52,6 +60,7 @@ export class EmulatorCoreInterface {
 
   destroy() {
     this.stop();
+    this.inputState = {};
   }
 }
 

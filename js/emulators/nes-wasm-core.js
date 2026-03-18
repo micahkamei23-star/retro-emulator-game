@@ -73,10 +73,12 @@ export default class NESWasmCore extends EmulatorCoreInterface {
   }
 
   destroy() {
-    this.stop();
+    super.destroy();
     if (this.nes) {
       this.nes.free();
       this.nes = null;
     }
+    this.wasm = null;
+    this.imageData = null;
   }
 }

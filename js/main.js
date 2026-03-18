@@ -183,8 +183,9 @@ document.addEventListener('DOMContentLoaded', () => {
       await playCartridgeInsert(rom.name.replace(/\.[^/.]+$/, ''));
       playStartupSound();
 
+      // loadCore() destroys any previously active core before creating a new one
+      activeCore = null;
       const loaded = await loader.loadCore(rom.system);
-      if (activeCore && activeCore !== loaded.core) activeCore.stop();
       activeCore = loaded.core;
 
       activeSystemLabel.textContent = `System: ${loaded.systemName}`;
@@ -238,10 +239,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function stopGame() {
     const system = activeRom?.system;
-    activeCore?.stop();
     if (system) loader.unloadCore(system);
     activeCore = null;
     activeRom  = null;
+    // Reset controller state so stale input doesn't carry over
+    Object.keys(controllerState).forEach((key) => { controllerState[key] = false; });
     activeSystemLabel.textContent = 'System: None';
     activeCoreLabel.textContent   = 'Core: None';
     setStatus('None');

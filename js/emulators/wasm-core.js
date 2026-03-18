@@ -103,4 +103,12 @@ export default class WasmCore extends EmulatorCoreInterface {
       this.free(ptr);
     }
   }
+
+  destroy() {
+    super.destroy();
+    this.module = null;
+    this.exports = null;
+    this.memory = null;
+    this.imageData = null;
+  }
 }

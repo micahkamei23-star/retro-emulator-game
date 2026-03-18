@@ -127,4 +127,11 @@ export default class GameBoyCore extends EmulatorCoreInterface {
     if (!this.gb.loadState) return;
     this.gb.loadState(base64ToUint8(state));
   }
+
+  destroy() {
+    super.destroy();
+    this.gb = null;
+    this.imageData = null;
+    this.hasReceivedFrame = false;
+  }
 }

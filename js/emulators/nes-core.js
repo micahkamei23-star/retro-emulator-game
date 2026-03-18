@@ -122,7 +122,9 @@ export default class NESCore extends EmulatorCoreInterface {
   }
 
   destroy() {
-    this.stop();
+    super.destroy();
     this.nes = null;
+    this.imageData = null;
+    this.frameBuffer = null;
   }
 }
