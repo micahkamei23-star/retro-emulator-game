@@ -42,7 +42,12 @@ export class EmulatorCoreInterface {
   start(onFrame) {
     if (this.isRunning) return;
 
-    this.stop();
+    // Ensure any orphaned animation frame is cancelled before starting fresh
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+
     this.isRunning = true;
     this._frameCounter = 0;
 

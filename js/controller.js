@@ -209,7 +209,7 @@ class Controller {
 
     const poll = () => {
       const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
-      const pad = gamepads[0] || gamepads[1] || gamepads[2] || gamepads[3];
+      const pad = Array.prototype.find.call(gamepads, (gp) => gp !== null);
       if (pad) {
         // Axis-based d-pad
         const left = pad.axes[0] < -0.4;
