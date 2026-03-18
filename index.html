@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#231942" />
   <title>Retro Emulator</title>
   <link rel="manifest" href="manifest.json" />
@@ -80,6 +80,27 @@
         <ul id="libraryList" class="library-list" aria-live="polite"></ul>
       </aside>
     </main>
+
+    <!-- ── Mobile Fullscreen Control Overlay ──────────────────────── -->
+    <div id="mobileControlOverlay" class="mobile-overlay" hidden>
+      <div id="joystickZone" class="mobile-joystick-zone">
+        <div id="joystickBase" class="mobile-joystick-base">
+          <div id="joystickThumb" class="mobile-joystick-thumb"></div>
+        </div>
+      </div>
+
+      <div class="mobile-center-controls">
+        <button id="mobileBtn-select" class="mobile-btn mobile-btn-util" type="button">SEL</button>
+        <button id="mobileBtn-start" class="mobile-btn mobile-btn-util" type="button">STR</button>
+      </div>
+
+      <div class="mobile-action-buttons">
+        <button id="mobileBtn-b" class="mobile-btn mobile-btn-b" type="button">B</button>
+        <button id="mobileBtn-a" class="mobile-btn mobile-btn-a" type="button">A</button>
+      </div>
+
+      <button id="mobileExitBtn" class="mobile-exit-btn" type="button">EXIT</button>
+    </div>
 
     <!-- ── Shoulder buttons (cosmetic) ───────────────────────────── -->
     <div class="shoulder-row" aria-hidden="true">
