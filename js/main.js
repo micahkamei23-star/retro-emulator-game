@@ -190,11 +190,31 @@ document.addEventListener('DOMContentLoaded', () => {
       activeSystemLabel.textContent = `System: ${loaded.systemName}`;
       activeCoreLabel.textContent   = `Core: ${loaded.config.label}`;
 
-      // Resolve ROM bytes — either fresh buffer or from stored data URL
-      const bytes = romBuffer instanceof Uint8Array
-        ? romBuffer
-        : new Uint8Array(romBuffer || StorageManager.dataURLToArrayBuffer(rom.data));
+      // Resolve ROM bytes — fresh buffer, passed buffer, or IndexedDB
+      let bytes;
+      if (romBuffer instanceof Uint8Array) {
+        bytes = romBuffer;
+      } else if (romBuffer) {
+        bytes = new Uint8Array(romBuffer);
+      } else {
+        // Load from IndexedDB (primary) or fall back to legacy data URL
+        const stored = await storage.loadRomData(rom.id);
+        if (stored?.data) {
+          bytes = new Uint8Array(stored.data);
+          console.log('ROM loaded from storage', bytes.length);
+        } else if (rom.data) {
+          bytes = new Uint8Array(StorageManager.dataURLToArrayBuffer(rom.data));
+        }
+      }
 
+      if (!bytes || bytes.length < 16) {
+        console.error('Invalid ROM');
+        setStatus(`Invalid ROM — ${rom.name}`);
+        setGameMode(false);
+        return;
+      }
+
+      console.log('Passing to emulator');
       await activeCore.loadROM(bytes);
       activeCore.setInput(controllerState);
       activeCore.start();
@@ -242,11 +262,22 @@ document.addEventListener('DOMContentLoaded', () => {
     setSystemLabel: (text) => { activeSystemLabel.textContent = text; },
     setCoreLabel:   (text) => { activeCoreLabel.textContent   = text; },
     setRomLabel:    (text) => { activeRomLabel.textContent    = text; },
-    onStarted: ({ file, system, loaded }) => {
+    onStarted: async ({ file, system, loaded }) => {
       const romId = `${file.name}-${file.size}-${file.lastModified}`;
       activeRom  = { id: romId, name: file.name, system, systemLabel: system.toUpperCase(), size: file.size };
       activeCore = loaded.core;
       library    = storage.upsertRom(activeRom);
+
+      // Persist ROM data to IndexedDB so it survives refresh
+      try {
+        const buffer = await file.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        console.log('ROM uploaded', bytes.length);
+        await storage.saveRomData(romId, file.name, system, buffer);
+      } catch (err) {
+        console.error('[storage] failed to persist ROM data', err);
+      }
+
       renderLibrary();
       setStatus(file.name);
       setCanvasAspectRatio(system);
