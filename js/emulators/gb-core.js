@@ -97,6 +97,11 @@ export default class GameBoyCore extends EmulatorCoreInterface {
     }
   }
 
+  getFrameBuffer() {
+    if (!this.imageData) return null;
+    return this.imageData.data;
+  }
+
   runFrame() {
     Object.entries(BUTTON_MAP).forEach(([button, mapped]) => {
       const pressed = Boolean(this.inputState[button]);
@@ -115,6 +120,10 @@ export default class GameBoyCore extends EmulatorCoreInterface {
       console.warn('[GameBoy] runFrame executed but onFrame has not produced a frame yet.');
     }
 
+    if (!this.imageData) {
+      console.warn('[GameBoy] imageData is null — skipping render');
+      return;
+    }
     this.ctx.putImageData(this.imageData, 0, 0);
   }
 

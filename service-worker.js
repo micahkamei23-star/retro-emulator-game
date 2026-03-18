@@ -1,4 +1,4 @@
-const SW_VERSION = 'v9';
+const SW_VERSION = 'v10';
 const CACHE_PREFIX = 'retro-emulator-cache';
 const CACHE_NAME = `${CACHE_PREFIX}-${SW_VERSION}`;
 
@@ -12,11 +12,18 @@ const APP_SHELL = [
   './js/emulator-loader.js',
   './js/rom-loader.js',
   './js/storage.js',
+  './js/mobile-fullscreen.js',
   './js/emulators/core-interface.js',
   './js/emulators/script-loader.js',
+  './js/emulators/nes-core.js',
   './js/emulators/nes-wasm-core.js',
   './js/emulators/gb-core.js',
   './js/emulators/wasm-core.js',
+  './js/core/CoreManager.js',
+  './js/core/interfaces.js',
+  './js/input/inputManager.js',
+  './js/input/joystick.js',
+  './js/render/renderer.js',
   './service-worker.js',
 ];
 
