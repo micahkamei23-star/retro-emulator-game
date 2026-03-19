@@ -87,14 +87,15 @@ export default class WasmCore extends EmulatorCoreInterface {
     const size = this.exports.get_frame_size();
     if (!ptr || !size) return;
 
+    const expected = this.width * this.height * 4;
     const frame = new Uint8ClampedArray(this.memory.buffer, ptr, size);
-    if (frame.length !== this.width * this.height * 4) {
-      console.error('[WasmCore] FRAMEBUFFER SIZE MISMATCH', frame.length, this.width * this.height * 4);
-      return;
-    }
+    if (frame.length < expected) return;
+    const safeFrame = frame.length > expected
+      ? frame.subarray(0, expected)
+      : frame;
 
     this.ctx.imageSmoothingEnabled = false;
-    const imageData = new ImageData(new Uint8ClampedArray(frame), this.width, this.height);
+    const imageData = new ImageData(new Uint8ClampedArray(safeFrame), this.width, this.height);
     this.ctx.putImageData(imageData, 0, 0);
   }
 
