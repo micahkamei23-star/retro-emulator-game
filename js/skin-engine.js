@@ -68,10 +68,100 @@ export const skins = {
 };
 
 /* ── DOM refs ─────────────────────────────────────────────────── */
+const device      = document.getElementById('device');
 const deviceSkin  = document.getElementById('device-skin');
 const screen      = document.getElementById('screen');
 const hitboxLayer = document.getElementById('hitbox-layer');
 const emulator    = document.getElementById('emulator');
+
+/* ── Canvas scaling via transform (not CSS width/height) ─────── */
+/* Set to true to draw debug borders around cutout + canvas.     */
+const DEBUG_CANVAS = false;
+
+let _debugOverlay = null;
+
+function getDebugOverlay() {
+  if (!_debugOverlay) {
+    _debugOverlay = document.createElement('div');
+    _debugOverlay.style.cssText =
+      'position:absolute;pointer-events:none;z-index:99;top:0;left:0;width:100%;height:100%;';
+    device.appendChild(_debugOverlay);
+  }
+  return _debugOverlay;
+}
+
+function drawDebugOverlay(sx, sy, sw, sh, cx, cy, cw, ch) {
+  const overlay = getDebugOverlay();
+  overlay.innerHTML = '';
+  const cutoutDiv = document.createElement('div');
+  cutoutDiv.style.cssText =
+    `position:absolute;left:${sx}px;top:${sy}px;width:${sw}px;height:${sh}px;` +
+    `border:2px solid red;box-sizing:border-box;pointer-events:none;`;
+  overlay.appendChild(cutoutDiv);
+  const canvasDiv = document.createElement('div');
+  canvasDiv.style.cssText =
+    `position:absolute;left:${cx}px;top:${cy}px;width:${cw}px;height:${ch}px;` +
+    `border:2px solid lime;box-sizing:border-box;pointer-events:none;`;
+  overlay.appendChild(canvasDiv);
+}
+
+/**
+ * Position and scale the canvas to fit inside the skin screen cutout.
+ * Canvas internal resolution (canvas.width/height) is the source of truth.
+ * Scaling is applied via CSS transform only — never by changing canvas dimensions.
+ */
+function positionCanvas(skin) {
+  const rect = device.getBoundingClientRect();
+  const containerW = rect.width;
+  const containerH = rect.height;
+
+  if (!containerW || !containerH) {
+    /* Layout hasn't settled yet — retry on next frame */
+    requestAnimationFrame(() => positionCanvas(skin));
+    return;
+  }
+
+  const canvasW = screen.width;
+  const canvasH = screen.height;
+  if (!canvasW || !canvasH) return;
+
+  /* Compute cutout pixel rect from normalized skin coordinates */
+  const screenX = containerW * skin.screen.left;
+  const screenY = containerH * skin.screen.top;
+  const screenW = containerW * skin.screen.width;
+  const screenH = containerH * skin.screen.height;
+
+  /* Scale canvas to fit inside cutout, preserving aspect ratio */
+  const scale = Math.min(screenW / canvasW, screenH / canvasH);
+
+  /* Center canvas within the cutout */
+  const offsetX = screenX + (screenW - canvasW * scale) / 2;
+  const offsetY = screenY + (screenH - canvasH * scale) / 2;
+
+  /* Remove any legacy CSS size properties — canvas renders at native resolution */
+  screen.style.width     = '';
+  screen.style.height    = '';
+  screen.style.maxWidth  = '';
+  screen.style.maxHeight = '';
+
+  /* Apply position and scale */
+  screen.style.position        = 'absolute';
+  screen.style.left            = `${offsetX}px`;
+  screen.style.top             = `${offsetY}px`;
+  screen.style.transformOrigin = 'top left';
+  screen.style.transform       = `scale(${scale})`;
+
+  if (DEBUG_CANVAS) {
+    drawDebugOverlay(screenX, screenY, screenW, screenH,
+                     offsetX, offsetY, canvasW * scale, canvasH * scale);
+  }
+}
+
+/* Re-position canvas using the currently active skin (e.g. after resolution change) */
+export function repositionCanvas() {
+  const skin = skins[currentSkinName];
+  if (skin) positionCanvas(skin);
+}
 
 /* ── Input state: HOLD-based, not click-based ─────────────────── */
 const inputState = {
@@ -216,11 +306,8 @@ export function applySkin(name) {
   /* Step 1: Set image source */
   deviceSkin.src = skin.image;
 
-  /* Step 2: Position screen EXACTLY inside cutout (percentage of #device) */
-  screen.style.left   = (skin.screen.left   * 100) + '%';
-  screen.style.top    = (skin.screen.top    * 100) + '%';
-  screen.style.width  = (skin.screen.width  * 100) + '%';
-  screen.style.height = (skin.screen.height * 100) + '%';
+  /* Step 2: Position and scale canvas inside the skin screen cutout */
+  positionCanvas(skin);
 
   /* Step 3: Clear all hitboxes */
   hitboxLayer.innerHTML = '';
@@ -354,6 +441,14 @@ document.addEventListener('touchstart', (e) => {
 
 document.addEventListener('gesturestart', (e) => e.preventDefault());
 document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+/* ── ResizeObserver: reposition canvas when #device changes size ─ */
+if (typeof ResizeObserver !== 'undefined') {
+  new ResizeObserver(() => {
+    const skin = skins[currentSkinName];
+    if (skin) positionCanvas(skin);
+  }).observe(device);
+}
 
 /* ── Auto-init: apply first skin and start loop ───────────────── */
 applySkin(getSkinNames()[0]);
