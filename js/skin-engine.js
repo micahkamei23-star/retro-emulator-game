@@ -19,7 +19,7 @@ export const skins = {
       left:   0.12,
       top:    0.18,
       width:  0.76,
-      height: 0.52,
+      height: 0.385,
     },
     hitboxes: {
       A:      { x: 0.82, y: 0.72, size: 0.12 },
@@ -36,7 +36,7 @@ export const skins = {
       left:   0.10,
       top:    0.20,
       width:  0.80,
-      height: 0.40,
+      height: 0.30,
     },
     hitboxes: {
       A:      { x: 0.82, y: 0.70, size: 0.12 },
@@ -55,7 +55,7 @@ export const skins = {
       left:   0.08,
       top:    0.12,
       width:  0.84,
-      height: 0.50,
+      height: 0.413,
     },
     hitboxes: {
       A:      { x: 0.84, y: 0.75, size: 0.12 },
