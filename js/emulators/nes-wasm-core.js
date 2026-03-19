@@ -60,6 +60,10 @@ export default class NESWasmCore extends EmulatorCoreInterface {
   }
 
   runFrame() {
+    // Enforce canvas at native resolution
+    if (this.canvas.width !== SCREEN_WIDTH) this.canvas.width = SCREEN_WIDTH;
+    if (this.canvas.height !== SCREEN_HEIGHT) this.canvas.height = SCREEN_HEIGHT;
+
     // Build button bitmask from input state
     let mask = 0;
     for (const [button, bit] of Object.entries(BUTTON_BITS)) {
@@ -76,14 +80,15 @@ export default class NESWasmCore extends EmulatorCoreInterface {
     this.nes.update_framebuffer();
     const ptr = this.nes.framebuffer_ptr();
 
-    if (!this.imageData) {
-      console.warn('[NESWasmCore] imageData is null — skipping render');
+    const frame = new Uint8ClampedArray(this.wasm.memory.buffer, ptr, FRAMEBUFFER_SIZE);
+    if (frame.length !== SCREEN_WIDTH * SCREEN_HEIGHT * 4) {
+      console.error('[NESWasmCore] FRAMEBUFFER SIZE MISMATCH', frame.length, SCREEN_WIDTH * SCREEN_HEIGHT * 4);
       return;
     }
 
-    const pixels = new Uint8ClampedArray(this.wasm.memory.buffer, ptr, FRAMEBUFFER_SIZE);
-    this.imageData.data.set(pixels);
-    this.ctx.putImageData(this.imageData, 0, 0);
+    this.ctx.imageSmoothingEnabled = false;
+    const imageData = new ImageData(new Uint8ClampedArray(frame), SCREEN_WIDTH, SCREEN_HEIGHT);
+    this.ctx.putImageData(imageData, 0, 0);
   }
 
   destroy() {
