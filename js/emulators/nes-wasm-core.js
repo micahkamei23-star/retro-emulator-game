@@ -81,14 +81,19 @@ export default class NESWasmCore extends EmulatorCoreInterface {
     const ptr = this.nes.framebuffer_ptr();
 
     const frame = new Uint8ClampedArray(this.wasm.memory.buffer, ptr, FRAMEBUFFER_SIZE);
-    const expected = SCREEN_WIDTH * SCREEN_HEIGHT * 4;
-    if (frame.length < expected) return;
-    const safeFrame = frame.length > expected
-      ? frame.subarray(0, expected)
-      : frame;
+
+    const actualHeight = Math.floor(frame.length / (SCREEN_WIDTH * 4));
+    const expectedHeight = SCREEN_HEIGHT;
+    const startRow = Math.floor((actualHeight - expectedHeight) / 2);
+    const dst = new Uint8ClampedArray(SCREEN_WIDTH * expectedHeight * 4);
+    for (let y = 0; y < expectedHeight; y++) {
+      const srcOffset = (y + startRow) * SCREEN_WIDTH * 4;
+      const dstOffset = y * SCREEN_WIDTH * 4;
+      dst.set(frame.subarray(srcOffset, srcOffset + SCREEN_WIDTH * 4), dstOffset);
+    }
 
     this.ctx.imageSmoothingEnabled = false;
-    const imageData = new ImageData(new Uint8ClampedArray(safeFrame), SCREEN_WIDTH, SCREEN_HEIGHT);
+    const imageData = new ImageData(dst, SCREEN_WIDTH, expectedHeight);
     this.ctx.putImageData(imageData, 0, 0);
   }
 

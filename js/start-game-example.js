@@ -130,14 +130,20 @@ class WasmEmulatorRuntime {
     const size = this.exports.get_frame_size();
     if (!ptr || !size) return;
 
-    const expectedSize = width * height * 4;
     const frame = new Uint8ClampedArray(this.memory.buffer, ptr, size);
-    const safeFrame = frame.length >= expectedSize
-      ? frame.subarray(0, expectedSize)
-      : frame;
+
+    const actualHeight = Math.floor(frame.length / (width * 4));
+    const expectedHeight = height;
+    const startRow = Math.floor((actualHeight - expectedHeight) / 2);
+    const dst = new Uint8ClampedArray(width * expectedHeight * 4);
+    for (let y = 0; y < expectedHeight; y++) {
+      const srcOffset = (y + startRow) * width * 4;
+      const dstOffset = y * width * 4;
+      dst.set(frame.subarray(srcOffset, srcOffset + width * 4), dstOffset);
+    }
 
     this.ctx.imageSmoothingEnabled = false;
-    const imageData = new ImageData(new Uint8ClampedArray(safeFrame), width, height);
+    const imageData = new ImageData(dst, width, expectedHeight);
     this.ctx.putImageData(imageData, 0, 0);
   }
 

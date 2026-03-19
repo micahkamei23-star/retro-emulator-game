@@ -87,15 +87,20 @@ export default class WasmCore extends EmulatorCoreInterface {
     const size = this.exports.get_frame_size();
     if (!ptr || !size) return;
 
-    const expected = this.width * this.height * 4;
     const frame = new Uint8ClampedArray(this.memory.buffer, ptr, size);
-    if (frame.length < expected) return;
-    const safeFrame = frame.length > expected
-      ? frame.subarray(0, expected)
-      : frame;
+
+    const actualHeight = Math.floor(frame.length / (this.width * 4));
+    const expectedHeight = this.height;
+    const startRow = Math.floor((actualHeight - expectedHeight) / 2);
+    const dst = new Uint8ClampedArray(this.width * expectedHeight * 4);
+    for (let y = 0; y < expectedHeight; y++) {
+      const srcOffset = (y + startRow) * this.width * 4;
+      const dstOffset = y * this.width * 4;
+      dst.set(frame.subarray(srcOffset, srcOffset + this.width * 4), dstOffset);
+    }
 
     this.ctx.imageSmoothingEnabled = false;
-    const imageData = new ImageData(new Uint8ClampedArray(safeFrame), this.width, this.height);
+    const imageData = new ImageData(dst, this.width, expectedHeight);
     this.ctx.putImageData(imageData, 0, 0);
   }
 
