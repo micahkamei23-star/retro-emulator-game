@@ -3,145 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#231942" />
+  <meta name="theme-color" content="#000000" />
   <title>Retro Emulator</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
-  <div class="app-shell main-container ui-visible">
 
-    <!-- ── Theme Picker ──────────────────────────────────────────── -->
-    <div class="theme-picker" role="group" aria-label="Select visual theme">
-      <input type="radio" name="emu-theme" id="theme-gameboy"  class="theme-radio" checked />
-      <input type="radio" name="emu-theme" id="theme-switch"   class="theme-radio" />
-      <input type="radio" name="emu-theme" id="theme-vita"     class="theme-radio" />
-      <input type="radio" name="emu-theme" id="theme-arcade"   class="theme-radio" />
-      <input type="radio" name="emu-theme" id="theme-minimal"  class="theme-radio" />
-      <label for="theme-gameboy"  class="theme-label" title="Game Boy">GB</label>
-      <label for="theme-switch"   class="theme-label" title="Nintendo Switch">SW</label>
-      <label for="theme-vita"     class="theme-label" title="PS Vita">VT</label>
-      <label for="theme-arcade"   class="theme-label" title="Retro Arcade">ARC</label>
-      <label for="theme-minimal"  class="theme-label" title="Minimal Pro">MIN</label>
+  <!-- ── Strict device-skin DOM (EXACT — do not modify structure) ── -->
+  <div id="emulator">
+    <div id="device">
+      <img id="device-skin" alt="" />
+
+      <canvas id="screen"></canvas>
+      <div id="hitbox-layer"></div>
     </div>
-
-    <!-- ── Console Header: logo + speakers + LED ─────────────────── -->
-    <header class="console-header" aria-hidden="true">
-      <div class="speaker-grille">
-        <span></span><span></span><span></span><span></span><span></span><span></span>
-      </div>
-      <div class="console-logo">RETRO<em>EMU</em></div>
-      <div class="header-right">
-        <div class="power-led"></div>
-        <div class="speaker-grille">
-          <span></span><span></span><span></span><span></span><span></span><span></span>
-        </div>
-      </div>
-    </header>
-
-    <!-- ── Main content ──────────────────────────────────────────── -->
-    <main class="console-body">
-      <section class="screen-panel">
-        <div class="status-row">
-          <span id="activeSystem">System: None</span>
-          <span id="activeCore">Core: None</span>
-          <span id="activeRom">ROM: None</span>
-          <button id="exitGameBtn" class="mini-exit-btn" type="button" hidden>Exit Game</button>
-        </div>
-
-        <div class="screen-bezel">
-          <div class="screen-frame">
-            <canvas id="gameCanvas" width="256" height="240" aria-label="Emulator screen"></canvas>
-            <div class="screen-scanline-overlay" aria-hidden="true"></div>
-            <div id="cartridgeOverlay" class="cartridge-overlay" aria-hidden="true">
-              <div class="cartridge-slot"></div>
-              <div class="cartridge-body"></div>
-              <p id="cartridgeLabel" class="cartridge-label">INSERTING CARTRIDGE...</p>
-            </div>
-            <button id="exitFullscreenOverlay" class="exit-overlay" type="button" hidden>Tap to exit game</button>
-          </div>
-        </div>
-
-        <div class="game-actions utility-buttons">
-          <button id="saveStateBtn" class="action-btn">Save State</button>
-          <button id="loadStateBtn" class="action-btn">Load State</button>
-          <button id="clearStateBtn" class="action-btn warning">Clear State</button>
-        </div>
-      </section>
-
-      <div class="library-toggle-row">
-        <button id="libraryToggleBtn" class="action-btn" type="button">Game Library ▼</button>
-        <label for="rom-upload" id="upload-btn" class="file-input-label">Upload ROM</label>
-        <input type="file" id="rom-upload" accept=".nes,.gba,.sfc,.smc,.gb" hidden />
-      </div>
-
-      <aside id="libraryDrawer" class="library-panel" hidden>
-        <ol id="recentList" class="recent-list" aria-label="Recently played games"></ol>
-        <ul id="libraryList" class="library-list" aria-live="polite"></ul>
-      </aside>
-    </main>
-
-    <!-- ── Mobile Fullscreen Control Overlay ──────────────────────── -->
-    <div id="mobileControlOverlay" class="mobile-overlay" hidden>
-      <div id="joystickZone" class="mobile-joystick-zone">
-        <div id="joystickBase" class="mobile-joystick-base">
-          <div id="joystickThumb" class="mobile-joystick-thumb"></div>
-        </div>
-      </div>
-
-      <div class="mobile-center-controls">
-        <button id="mobileBtn-select" class="mobile-btn mobile-btn-util" type="button">SEL</button>
-        <button id="mobileBtn-start" class="mobile-btn mobile-btn-util" type="button">STR</button>
-      </div>
-
-      <div class="mobile-action-buttons">
-        <button id="mobileBtn-b" class="mobile-btn mobile-btn-b" type="button">B</button>
-        <button id="mobileBtn-a" class="mobile-btn mobile-btn-a" type="button">A</button>
-      </div>
-
-      <button id="mobileExitBtn" class="mobile-exit-btn" type="button">EXIT</button>
-    </div>
-
-    <!-- ── Shoulder buttons (cosmetic) ───────────────────────────── -->
-    <div class="shoulder-row" aria-hidden="true">
-      <div class="shoulder-btn shoulder-left">L</div>
-      <div class="shoulder-btn shoulder-right">R</div>
-    </div>
-
-    <!-- ── Touch Controls ────────────────────────────────────────── -->
-    <section class="controls-section" aria-label="Touch controls">
-      <div class="controller">
-
-        <div class="dpad-pod">
-          <div class="dpad">
-            <button data-control="up"    class="touch-btn dpad-btn dpad-up">▲</button>
-            <button data-control="left"  class="touch-btn dpad-btn dpad-left">◀</button>
-            <button data-control="right" class="touch-btn dpad-btn dpad-right">▶</button>
-            <button data-control="down"  class="touch-btn dpad-btn dpad-down">▼</button>
-          </div>
-        </div>
-
-        <div class="center-controls">
-          <div class="start-select">
-            <button data-control="select" class="touch-btn utility">SELECT</button>
-            <button data-control="start"  class="touch-btn utility">START</button>
-          </div>
-        </div>
-
-        <div class="abxy-pod">
-          <div class="abxy">
-            <button data-control="y" class="touch-btn controller-btn btn-y">Y</button>
-            <button data-control="x" class="touch-btn controller-btn btn-x">X</button>
-            <button data-control="b" class="touch-btn controller-btn btn-b">B</button>
-            <button data-control="a" class="touch-btn controller-btn btn-a">A</button>
-          </div>
-        </div>
-
-      </div>
-    </section>
   </div>
 
-  <script src="https://unpkg.com/jsnes/dist/jsnes.min.js"></script>
+  <!-- ── Utility bar: ROM upload + skin cycling + fullscreen ── -->
+  <!-- These are app-level controls, NOT emulator controls.     -->
+  <!-- No game buttons here — only transparent utility actions. -->
+  <div id="util-bar" aria-label="Emulator utilities">
+    <label for="rom-upload" class="util-action" title="Upload ROM file">ROM</label>
+    <input type="file" id="rom-upload"
+           accept=".nes,.gb,.gbc,.gba,.sfc,.smc"
+           hidden />
+
+    <button id="prev-skin"     class="util-action" type="button" title="Previous skin">&#9664;</button>
+    <button id="next-skin"     class="util-action" type="button" title="Next skin">&#9654;</button>
+    <button id="fullscreen-btn" class="util-action" type="button" title="Toggle fullscreen">&#x26F6;</button>
+
+    <button id="save-state-btn"  class="util-action" type="button" title="Save state">SAV</button>
+    <button id="load-state-btn"  class="util-action" type="button" title="Load state">LOD</button>
+
+    <span id="status-text" class="util-status" aria-live="polite"></span>
+  </div>
+
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

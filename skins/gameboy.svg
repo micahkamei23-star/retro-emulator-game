@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 480">
+  <defs>
+    <linearGradient id="gb-body" x1="0" y1="0" x2="0.4" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0%"   stop-color="#d4d0b8"/>
+      <stop offset="45%"  stop-color="#bcb89e"/>
+      <stop offset="100%" stop-color="#9c9882"/>
+    </linearGradient>
+    <linearGradient id="gb-bezel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#252233"/>
+      <stop offset="100%" stop-color="#181626"/>
+    </linearGradient>
+    <linearGradient id="gb-btnA" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#e82030"/>
+      <stop offset="100%" stop-color="#aa1020"/>
+    </linearGradient>
+    <linearGradient id="gb-btnB" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#4a4640"/>
+      <stop offset="100%" stop-color="#2a2825"/>
+    </linearGradient>
+    <filter id="gb-shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.55"/>
+    </filter>
+    <filter id="gb-led-glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- ── Device body ── -->
+  <rect x="1" y="1" width="268" height="478" rx="26" ry="26"
+        fill="url(#gb-body)" stroke="#8a8472" stroke-width="1.5"/>
+
+  <!-- Top curve (classic Game Boy shape) -->
+  <ellipse cx="135" cy="14" rx="108" ry="18" fill="#c8c4ac" opacity="0.5"/>
+
+  <!-- Diagonal accent stripe -->
+  <rect x="0" y="430" width="270" height="12" rx="0" fill="#b0ac98" opacity="0.35"/>
+
+  <!-- Volume slider notch (left) -->
+  <rect x="0" y="138" width="5" height="44" rx="2.5" fill="#7a7864"/>
+  <rect x="1" y="154" width="3" height="14" rx="1.5" fill="#5a5848"/>
+
+  <!-- Headphone jack (top left) -->
+  <circle cx="42" cy="3" r="5.5" fill="#68665a" stroke="#484638" stroke-width="1"/>
+  <circle cx="42" cy="3" r="3" fill="#3a3830"/>
+
+  <!-- ── Screen bezel: top=22, height=316 ── -->
+  <rect x="18" y="22" width="234" height="316" rx="10" ry="10"
+        fill="url(#gb-bezel)" stroke="#0e0c1c" stroke-width="1.5"/>
+
+  <!-- Brand label inside bezel -->
+  <text x="135" y="62" text-anchor="middle"
+        font-family="'Courier New', monospace" font-size="9.5"
+        fill="#4a4858" letter-spacing="3.5" font-weight="bold">RETRO EMU</text>
+
+  <!-- Dot matrix label -->
+  <text x="135" y="74" text-anchor="middle"
+        font-family="'Courier New', monospace" font-size="6"
+        fill="#3a3848" letter-spacing="1.5">DOT MATRIX WITH STEREO SOUND</text>
+
+  <!-- Screen surround ring -->
+  <rect x="29" y="82" width="212" height="256" rx="4" ry="4"
+        fill="none" stroke="#2a2838" stroke-width="2.5"/>
+
+  <!-- ── Screen cutout: left=0.12→32.4, top=0.18→86.4, w=0.76→205.2, h=0.52→249.6 ── -->
+  <!-- This is where the canvas will sit — rendered black here as placeholder -->
+  <rect x="32.4" y="86.4" width="205.2" height="249.6" rx="2" ry="2" fill="#0a1014"/>
+
+  <!-- Screen inner shine (top-left highlight) -->
+  <rect x="34" y="88" width="60" height="4" rx="2" fill="#1a2830" opacity="0.8"/>
+  <rect x="34" y="88" width="4" height="60" rx="2" fill="#1a2830" opacity="0.8"/>
+
+  <!-- Power LED: top-right of bezel -->
+  <circle cx="246" cy="46" r="5" fill="#15803d" filter="url(#gb-led-glow)"/>
+  <circle cx="246" cy="46" r="3" fill="#4ade80"/>
+
+  <!-- ── Lower body section ── -->
+  <!-- Angled diagonal separator line -->
+  <line x1="18" y1="350" x2="252" y2="350" stroke="#a8a490" stroke-width="1" opacity="0.6"/>
+
+  <!-- ── D-pad: center (54,360) size=54 ── -->
+  <!-- Horizontal arm -->
+  <rect x="27" y="351" width="54" height="18" rx="3" ry="3"
+        fill="#1c1a18" stroke="#111010" stroke-width="1" filter="url(#gb-shadow)"/>
+  <!-- Vertical arm -->
+  <rect x="45" y="333" width="18" height="54" rx="3" ry="3"
+        fill="#1c1a18" stroke="#111010" stroke-width="1" filter="url(#gb-shadow)"/>
+  <!-- Center square -->
+  <rect x="45" y="351" width="18" height="18" rx="2" fill="#242220"/>
+  <!-- Arrow indicators (subtle) -->
+  <polygon points="54,337 50.5,343 57.5,343" fill="#3c3a36" opacity="0.7"/>
+  <polygon points="54,383 50.5,377 57.5,377" fill="#3c3a36" opacity="0.7"/>
+  <polygon points="31,360 37,356.5 37,363.5" fill="#3c3a36" opacity="0.7"/>
+  <polygon points="77,360 71,356.5 71,363.5" fill="#3c3a36" opacity="0.7"/>
+
+  <!-- ── A button: center (221.4, 345.6) r≈16 ── -->
+  <circle cx="221" cy="346" r="17" fill="#8a000c" filter="url(#gb-shadow)"/>
+  <circle cx="221" cy="346" r="15.5" fill="url(#gb-btnA)" stroke="#aa0015" stroke-width="0.5"/>
+  <circle cx="216" cy="342" r="4" fill="#f05060" opacity="0.35"/>
+  <text x="221" y="351" text-anchor="middle"
+        font-family="'Courier New', monospace" font-size="11"
+        fill="#fff" font-weight="bold">A</text>
+
+  <!-- ── B button: center (194.4, 384) r≈16 ── -->
+  <circle cx="194" cy="384" r="17" fill="#121010" filter="url(#gb-shadow)"/>
+  <circle cx="194" cy="384" r="15.5" fill="url(#gb-btnB)" stroke="#181614" stroke-width="0.5"/>
+  <circle cx="189" cy="380" r="4" fill="#686460" opacity="0.35"/>
+  <text x="194" y="389" text-anchor="middle"
+        font-family="'Courier New', monospace" font-size="11"
+        fill="#a0a098" font-weight="bold">B</text>
+
+  <!-- ── Speaker grille: right lower ── -->
+  <line x1="156" y1="353" x2="156" y2="418" stroke="#989082" stroke-width="1.8" stroke-linecap="round" opacity="0.55"/>
+  <line x1="163" y1="350" x2="163" y2="421" stroke="#989082" stroke-width="1.8" stroke-linecap="round" opacity="0.55"/>
+  <line x1="170" y1="348" x2="170" y2="423" stroke="#989082" stroke-width="1.8" stroke-linecap="round" opacity="0.55"/>
+  <line x1="177" y1="348" x2="177" y2="423" stroke="#989082" stroke-width="1.8" stroke-linecap="round" opacity="0.55"/>
+  <line x1="184" y1="350" x2="184" y2="421" stroke="#989082" stroke-width="1.8" stroke-linecap="round" opacity="0.55"/>
+  <line x1="191" y1="353" x2="191" y2="418" stroke="#989082" stroke-width="1.8" stroke-linecap="round" opacity="0.55"/>
+
+  <!-- ── SELECT: center (108, 441.6) size=27 ── -->
+  <!-- rect centered: x=94.5, y=436.1, w=27, h=11 -->
+  <rect x="94.5" y="436.1" width="27" height="11" rx="5.5"
+        fill="#242220" stroke="#161412" stroke-width="1" filter="url(#gb-shadow)"/>
+  <text x="108" y="444.5" text-anchor="middle"
+        font-family="'Courier New', monospace" font-size="5.5"
+        fill="#6a6458" letter-spacing="0.5">SELECT</text>
+
+  <!-- ── START: center (135, 441.6) size=27 ── -->
+  <!-- rect centered: x=121.5, y=436.1, w=27, h=11 -->
+  <rect x="121.5" y="436.1" width="27" height="11" rx="5.5"
+        fill="#242220" stroke="#161412" stroke-width="1" filter="url(#gb-shadow)"/>
+  <text x="135" y="444.5" text-anchor="middle"
+        font-family="'Courier New', monospace" font-size="5.5"
+        fill="#6a6458" letter-spacing="0.5">START</text>
+
+  <!-- Bottom label -->
+  <text x="135" y="472" text-anchor="middle"
+        font-family="'Courier New', monospace" font-size="5"
+        fill="#6a6858" letter-spacing="1">MODEL GBR-001</text>
+</svg>
