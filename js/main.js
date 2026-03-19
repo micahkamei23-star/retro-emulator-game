@@ -17,6 +17,7 @@ import {
   applySkin,
   nextSkin,
   prevSkin,
+  repositionCanvas,
   setCore,
   startLoop,
   toggleFullscreen,
@@ -217,5 +218,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ── Initial boot screen ──────────────────────────────────── */
   drawBootScreen();
+  repositionCanvas();
   startLoop();
 });
