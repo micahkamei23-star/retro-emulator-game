@@ -109,6 +109,12 @@ class WasmEmulatorRuntime {
   }
 
   renderFrame() {
+    const width = this.config.width;
+    const height = this.config.height;
+
+    if (this.canvas.width !== width) this.canvas.width = width;
+    if (this.canvas.height !== height) this.canvas.height = height;
+
     if (typeof this.exports.frame === 'function') {
       this.exports.frame();
     }
@@ -124,10 +130,15 @@ class WasmEmulatorRuntime {
     const size = this.exports.get_frame_size();
     if (!ptr || !size) return;
 
-    const rgba = new Uint8Array(this.memory.buffer, ptr, size);
-    const expected = this.imageData.data.length;
-    this.imageData.data.set(rgba.subarray(0, expected));
-    this.ctx.putImageData(this.imageData, 0, 0);
+    const frame = new Uint8ClampedArray(this.memory.buffer, ptr, size);
+    if (frame.length !== width * height * 4) {
+      console.error('FRAMEBUFFER SIZE MISMATCH', frame.length, width * height * 4);
+      return;
+    }
+
+    this.ctx.imageSmoothingEnabled = false;
+    const imageData = new ImageData(new Uint8ClampedArray(frame), width, height);
+    this.ctx.putImageData(imageData, 0, 0);
   }
 
   start() {

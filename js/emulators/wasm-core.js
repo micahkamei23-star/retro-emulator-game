@@ -67,6 +67,10 @@ export default class WasmCore extends EmulatorCoreInterface {
   }
 
   runFrame() {
+    // Enforce canvas at native resolution
+    if (this.canvas.width !== this.width) this.canvas.width = this.width;
+    if (this.canvas.height !== this.height) this.canvas.height = this.height;
+
     BUTTONS.forEach((button, index) => {
       if (this.exports.set_button) {
         this.exports.set_button(index, this.inputState[button] ? 1 : 0);
@@ -83,14 +87,15 @@ export default class WasmCore extends EmulatorCoreInterface {
     const size = this.exports.get_frame_size();
     if (!ptr || !size) return;
 
-    if (!this.imageData) {
-      console.warn('[WasmCore] imageData is null — skipping render');
+    const frame = new Uint8ClampedArray(this.memory.buffer, ptr, size);
+    if (frame.length !== this.width * this.height * 4) {
+      console.error('[WasmCore] FRAMEBUFFER SIZE MISMATCH', frame.length, this.width * this.height * 4);
       return;
     }
 
-    const frame = new Uint8Array(this.memory.buffer, ptr, size);
-    this.imageData.data.set(frame.subarray(0, this.imageData.data.length));
-    this.ctx.putImageData(this.imageData, 0, 0);
+    this.ctx.imageSmoothingEnabled = false;
+    const imageData = new ImageData(new Uint8ClampedArray(frame), this.width, this.height);
+    this.ctx.putImageData(imageData, 0, 0);
   }
 
   serializeState() {

@@ -112,6 +112,10 @@ export default class GBCore extends EmulatorCoreInterface {
     const m = this.module;
     const e = this.e;
 
+    // Enforce canvas at native resolution
+    if (this.canvas.width !== SCREEN_WIDTH) this.canvas.width = SCREEN_WIDTH;
+    if (this.canvas.height !== SCREEN_HEIGHT) this.canvas.height = SCREEN_HEIGHT;
+
     // Apply input state
     m._set_joyp_up(e, this.inputState.up ? 1 : 0);
     m._set_joyp_down(e, this.inputState.down ? 1 : 0);
@@ -127,12 +131,15 @@ export default class GBCore extends EmulatorCoreInterface {
     while (true) {
       const event = m._emulator_run_until_f64(e, targetTicks);
       if (event & EVENT_NEW_FRAME) {
-        // Copy the RGBA framebuffer from WASM memory into our ImageData.
         // Always re-read the pointer in case WASM memory grew.
         const ptr = m._get_frame_buffer_ptr(e);
         const size = m._get_frame_buffer_size(e);
-        const src = new Uint8Array(m.HEAP8.buffer, ptr, size);
-        this.imageData.data.set(src);
+        if (size !== SCREEN_WIDTH * SCREEN_HEIGHT * 4) {
+          console.error('[GBCore] FRAMEBUFFER SIZE MISMATCH', size, SCREEN_WIDTH * SCREEN_HEIGHT * 4);
+        } else {
+          const frame = new Uint8ClampedArray(m.HEAP8.buffer, ptr, size);
+          this.imageData = new ImageData(new Uint8ClampedArray(frame), SCREEN_WIDTH, SCREEN_HEIGHT);
+        }
       }
       if (event & EVENT_UNTIL_TICKS) {
         break;
@@ -140,6 +147,7 @@ export default class GBCore extends EmulatorCoreInterface {
     }
 
     if (this.imageData) {
+      this.ctx.imageSmoothingEnabled = false;
       this.ctx.putImageData(this.imageData, 0, 0);
     }
   }
