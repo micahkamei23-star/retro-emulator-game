@@ -1,4 +1,4 @@
-const SW_VERSION = 'v11';
+const SW_VERSION = 'v12';
 const CACHE_PREFIX = 'retro-emulator-cache';
 const CACHE_NAME = `${CACHE_PREFIX}-${SW_VERSION}`;
 
@@ -8,11 +8,10 @@ const APP_SHELL = [
   './manifest.json',
   './css/styles.css',
   './js/main.js',
-  './js/controller.js',
+  './js/skin-engine.js',
   './js/emulator-loader.js',
   './js/rom-loader.js',
   './js/storage.js',
-  './js/mobile-fullscreen.js',
   './js/emulators/core-interface.js',
   './js/emulators/script-loader.js',
   './js/emulators/nes-core.js',
@@ -21,11 +20,11 @@ const APP_SHELL = [
   './js/emulators/wasm-core.js',
   './js/core/CoreManager.js',
   './js/core/interfaces.js',
-  './js/input/inputManager.js',
-  './js/input/joystick.js',
-  './js/render/renderer.js',
   './service-worker.js',
   './cores/gb/gbCore.js',
+  './skins/gameboy.svg',
+  './skins/gba.svg',
+  './skins/psp.svg',
 ];
 
 const CORE_ASSETS = [
