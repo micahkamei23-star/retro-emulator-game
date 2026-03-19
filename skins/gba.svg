@@ -65,13 +65,13 @@
         font-family="'Courier New', monospace" font-size="9"
         fill="#404860" letter-spacing="3" font-weight="bold">RETRO ADVANCE</text>
 
-  <!-- ── Screen cutout: left=0.10→27, top=0.20→96, w=0.80→216, h=0.40→192 ── -->
-  <rect x="27" y="96" width="216" height="192" rx="3" ry="3" fill="#080c10"/>
+  <!-- ── Screen cutout: left=0.10→27, top=0.20→96, w=0.80→216, h=0.30→144 ── -->
+  <rect x="27" y="96" width="216" height="144" rx="3" ry="3" fill="#080c10"/>
 
   <!-- Screen surround glow -->
-  <rect x="25" y="94" width="220" height="196" rx="4" ry="4"
+  <rect x="25" y="94" width="220" height="148" rx="4" ry="4"
         fill="none" stroke="#3040a0" stroke-width="1.5" opacity="0.4"/>
-  <rect x="22" y="91" width="226" height="202" rx="5" ry="5"
+  <rect x="22" y="91" width="226" height="154" rx="5" ry="5"
         fill="none" stroke="#2030608" stroke-width="1" opacity="0.2"/>
 
   <!-- Screen shine -->
