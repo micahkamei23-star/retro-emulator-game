@@ -107,8 +107,15 @@ function drawDebugOverlay(sx, sy, sw, sh, cx, cy, cw, ch) {
 
 /**
  * Position and scale the canvas to fit inside the skin screen cutout.
- * Canvas internal resolution (canvas.width/height) is the source of truth.
- * Scaling is applied via CSS transform only — never by changing canvas dimensions.
+ *
+ * When the canvas has been configured for high-DPI rendering by setupCanvas()
+ * the logical dimensions are stored in canvas.dataset.logicalWidth/Height and
+ * the CSS display size is already set via canvas.style.width/height.  In that
+ * case we use the logical dimensions for scale maths and keep the CSS size
+ * properties intact so the browser can correctly map logical → physical pixels.
+ *
+ * For a non-DPR canvas (data attributes absent) the behaviour is identical to
+ * the original implementation: use canvas.width/height and clear CSS sizes.
  */
 function positionCanvas(skin) {
   const rect = device.getBoundingClientRect();
@@ -121,8 +128,10 @@ function positionCanvas(skin) {
     return;
   }
 
-  const canvasW = screen.width;
-  const canvasH = screen.height;
+  /* Use logical dimensions when available (DPR-aware) */
+  const hasDpr  = screen.dataset.logicalWidth && screen.dataset.logicalHeight;
+  const canvasW = hasDpr ? parseInt(screen.dataset.logicalWidth,  10) : screen.width;
+  const canvasH = hasDpr ? parseInt(screen.dataset.logicalHeight, 10) : screen.height;
   if (!canvasW || !canvasH) return;
 
   /* Compute cutout pixel rect from normalized skin coordinates */
@@ -138,11 +147,18 @@ function positionCanvas(skin) {
   const offsetX = screenX + (screenW - canvasW * scale) / 2;
   const offsetY = screenY + (screenH - canvasH * scale) / 2;
 
-  /* Remove any legacy CSS size properties — canvas renders at native resolution */
-  screen.style.width     = '';
-  screen.style.height    = '';
-  screen.style.maxWidth  = '';
-  screen.style.maxHeight = '';
+  if (hasDpr) {
+    /* Keep CSS size set by setupCanvas so the physical↔logical pixel ratio
+     * is correct.  Only clear the legacy max-* properties. */
+    screen.style.maxWidth  = '';
+    screen.style.maxHeight = '';
+  } else {
+    /* Non-DPR path: remove CSS size overrides and let transform handle display */
+    screen.style.width     = '';
+    screen.style.height    = '';
+    screen.style.maxWidth  = '';
+    screen.style.maxHeight = '';
+  }
 
   /* Apply position and scale */
   screen.style.position        = 'absolute';

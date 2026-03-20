@@ -1,67 +1,70 @@
 import { EmulatorCoreInterface, uint8ToBase64, base64ToUint8 } from './core-interface.js';
 import { loadScript } from './script-loader.js';
+import { render } from '../render/renderer.js';
+
+const SCREEN_WIDTH  = 160;
+const SCREEN_HEIGHT = 144;
 
 const BUTTON_MAP = {
-  up: 'UP',
-  down: 'DOWN',
-  left: 'LEFT',
-  right: 'RIGHT',
-  a: 'A',
-  b: 'B',
+  up:     'UP',
+  down:   'DOWN',
+  left:   'LEFT',
+  right:  'RIGHT',
+  a:      'A',
+  b:      'B',
   select: 'SELECT',
-  start: 'START',
+  start:  'START',
 };
 
 export default class GameBoyCore extends EmulatorCoreInterface {
   constructor(canvas) {
     super(canvas);
-    this.canvas.width = 160;
-    this.canvas.height = 144;
+    /* Set logical canvas dimensions before start() applies DPR scaling */
+    this.canvas.width  = SCREEN_WIDTH;
+    this.canvas.height = SCREEN_HEIGHT;
     this.ctx.imageSmoothingEnabled = false;
 
     this.gb = null;
-    this.imageData = this.ctx.createImageData(160, 144);
-    this.rgbaFrameLength = this.imageData.data.length;
-    this.pixelFrameLength = 160 * 144;
+    /* Reusable RGBA buffer — avoids per-frame ImageData allocation */
+    this._frameBuffer     = new Uint8ClampedArray(SCREEN_WIDTH * SCREEN_HEIGHT * 4);
+    this._pixelFrameLen   = SCREEN_WIDTH * SCREEN_HEIGHT;
     this.hasReceivedFrame = false;
   }
 
-  copyFrameToImageData(frame) {
+  copyFrameToBuffer(frame) {
     if (!frame?.length) return;
+    const dst = this._frameBuffer;
 
-    if (frame.length === this.rgbaFrameLength) {
-      this.imageData.data.set(frame);
+    if (frame.length === dst.length) {
+      dst.set(frame);
       return;
     }
 
-    if (frame.length === this.pixelFrameLength * 3) {
-      for (let src = 0, dst = 0; src < frame.length; src += 3, dst += 4) {
-        this.imageData.data[dst] = frame[src];
-        this.imageData.data[dst + 1] = frame[src + 1];
-        this.imageData.data[dst + 2] = frame[src + 2];
-        this.imageData.data[dst + 3] = 0xff;
+    if (frame.length === this._pixelFrameLen * 3) {
+      for (let src = 0, d = 0; src < frame.length; src += 3, d += 4) {
+        dst[d]     = frame[src];
+        dst[d + 1] = frame[src + 1];
+        dst[d + 2] = frame[src + 2];
+        dst[d + 3] = 0xff;
       }
       return;
     }
 
-    if (frame.length === this.pixelFrameLength) {
+    if (frame.length === this._pixelFrameLen) {
       for (let i = 0; i < frame.length; i += 1) {
         const src = frame[i];
-        const dst = i * 4;
-
-        // Handle both packed RGB and single-channel grayscale/indexed frames.
+        const d   = i * 4;
         if (src > 0xff) {
-          this.imageData.data[dst] = (src >> 16) & 0xff;
-          this.imageData.data[dst + 1] = (src >> 8) & 0xff;
-          this.imageData.data[dst + 2] = src & 0xff;
+          dst[d]     = (src >> 16) & 0xff;
+          dst[d + 1] = (src >> 8)  & 0xff;
+          dst[d + 2] =  src        & 0xff;
         } else {
           const intensity = src <= 3 ? (3 - src) * 85 : src;
-          this.imageData.data[dst] = intensity;
-          this.imageData.data[dst + 1] = intensity;
-          this.imageData.data[dst + 2] = intensity;
+          dst[d]     = intensity;
+          dst[d + 1] = intensity;
+          dst[d + 2] = intensity;
         }
-
-        this.imageData.data[dst + 3] = 0xff;
+        dst[d + 3] = 0xff;
       }
     }
   }
@@ -74,13 +77,16 @@ export default class GameBoyCore extends EmulatorCoreInterface {
     }
 
     this.gb = new GameBoyJS({
-      canvas: this.canvas,
-      audio: false,
+      canvas:  this.canvas,
+      audio:   false,
       onFrame: (frame) => {
         this.hasReceivedFrame = true;
-        this.copyFrameToImageData(frame);
+        this.copyFrameToBuffer(frame);
 
-        if (frame?.length && frame.length !== this.rgbaFrameLength && frame.length !== this.pixelFrameLength && frame.length !== this.pixelFrameLength * 3) {
+        if (frame?.length &&
+            frame.length !== this._frameBuffer.length &&
+            frame.length !== this._pixelFrameLen &&
+            frame.length !== this._pixelFrameLen * 3) {
           console.warn('[GameBoy] Unexpected frame size:', frame.length);
         }
       },
@@ -98,8 +104,7 @@ export default class GameBoyCore extends EmulatorCoreInterface {
   }
 
   getFrameBuffer() {
-    if (!this.imageData) return null;
-    return this.imageData.data;
+    return this._frameBuffer;
   }
 
   runFrame() {
@@ -120,11 +125,7 @@ export default class GameBoyCore extends EmulatorCoreInterface {
       console.warn('[GameBoy] runFrame executed but onFrame has not produced a frame yet.');
     }
 
-    if (!this.imageData) {
-      console.warn('[GameBoy] imageData is null — skipping render');
-      return;
-    }
-    this.ctx.putImageData(this.imageData, 0, 0);
+    render(this.ctx, this._frameBuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
   }
 
   serializeState() {
@@ -139,8 +140,8 @@ export default class GameBoyCore extends EmulatorCoreInterface {
 
   destroy() {
     super.destroy();
-    this.gb = null;
-    this.imageData = null;
+    this.gb               = null;
+    this._frameBuffer     = null;
     this.hasReceivedFrame = false;
   }
 }

@@ -1,17 +1,18 @@
 import { EmulatorCoreInterface, uint8ToBase64, base64ToUint8 } from '../../js/emulators/core-interface.js';
 import { loadScript } from '../../js/emulators/script-loader.js';
+import { render } from '../../js/render/renderer.js';
 
-const SCREEN_WIDTH = 160;
+const SCREEN_WIDTH  = 160;
 const SCREEN_HEIGHT = 144;
 const CPU_TICKS_PER_SECOND = 4194304;
-const AUDIO_FRAMES = 4096;
-const EVENT_NEW_FRAME = 1;
+const AUDIO_FRAMES  = 4096;
+const EVENT_NEW_FRAME  = 1;
 const EVENT_UNTIL_TICKS = 4;
-const CGB_COLOR_CURVE = 2;
-const TICKS_PER_FRAME = CPU_TICKS_PER_SECOND / 60;
+const CGB_COLOR_CURVE  = 2;
+const TICKS_PER_FRAME  = CPU_TICKS_PER_SECOND / 60;
 
-// Module-level cache so the WASM binary is only fetched and compiled once
-// even when the user switches between systems multiple times.
+/* Module-level cache so the WASM binary is only fetched and compiled once
+ * even when the user switches between systems multiple times. */
 let _binjgbModulePromise = null;
 
 async function loadBinjgbModule() {
@@ -28,16 +29,21 @@ async function loadBinjgbModule() {
 export default class GBCore extends EmulatorCoreInterface {
   constructor(canvas) {
     super(canvas);
-    this.canvas.width = SCREEN_WIDTH;
+    /* Set logical canvas dimensions before start() applies DPR scaling */
+    this.canvas.width  = SCREEN_WIDTH;
     this.canvas.height = SCREEN_HEIGHT;
     this.ctx.imageSmoothingEnabled = false;
 
     this.module = null;
     this.e = 0;
-    this.romDataPtr = 0;
+    this.romDataPtr    = 0;
     this.joypadBufferPtr = 0;
-    this._romBytes = null;
-    this.imageData = this.ctx.createImageData(SCREEN_WIDTH, SCREEN_HEIGHT);
+    this._romBytes     = null;
+
+    /* Reusable RGBA copy buffer — avoids allocating a new Uint8ClampedArray
+     * (and ImageData) on every frame, which was a significant source of GC
+     * pressure on mobile. */
+    this._frameBuffer = new Uint8ClampedArray(SCREEN_WIDTH * SCREEN_HEIGHT * 4);
   }
 
   async init() {
@@ -66,7 +72,7 @@ export default class GBCore extends EmulatorCoreInterface {
       this.romDataPtr = 0;
     }
 
-    // Align size up to 32 KB boundary as required by binjgb
+    /* Align size up to 32 KB boundary as required by binjgb */
     const size = (bytes.length + 0x7fff) & ~0x7fff;
     this.romDataPtr = this.module._malloc(size);
     const dest = new Uint8Array(this.module.HEAP8.buffer, this.romDataPtr, size);
@@ -85,9 +91,9 @@ export default class GBCore extends EmulatorCoreInterface {
       throw new Error('[GBCore] Invalid ROM or failed to create emulator instance');
     }
 
-    // Register the default joypad callback so that _set_joyp_* calls are
-    // forwarded to the emulator.  Without this the static button state
-    // modified by _set_joyp_* is never read by the core.
+    /* Register the default joypad callback so that _set_joyp_* calls are
+     * forwarded to the emulator.  Without this the static button state
+     * modified by _set_joyp_* is never read by the core. */
     this.joypadBufferPtr = this.module._joypad_new();
     this.module._emulator_set_default_joypad_callback(
       this.e,
@@ -102,8 +108,7 @@ export default class GBCore extends EmulatorCoreInterface {
   }
 
   getFrameBuffer() {
-    if (!this.imageData) return null;
-    return this.imageData.data;
+    return this._frameBuffer;
   }
 
   runFrame() {
@@ -112,43 +117,42 @@ export default class GBCore extends EmulatorCoreInterface {
     const m = this.module;
     const e = this.e;
 
-    // Enforce canvas at native resolution
-    if (this.canvas.width !== SCREEN_WIDTH) this.canvas.width = SCREEN_WIDTH;
-    if (this.canvas.height !== SCREEN_HEIGHT) this.canvas.height = SCREEN_HEIGHT;
-
-    // Apply input state
-    m._set_joyp_up(e, this.inputState.up ? 1 : 0);
-    m._set_joyp_down(e, this.inputState.down ? 1 : 0);
-    m._set_joyp_left(e, this.inputState.left ? 1 : 0);
-    m._set_joyp_right(e, this.inputState.right ? 1 : 0);
-    m._set_joyp_A(e, this.inputState.a ? 1 : 0);
-    m._set_joyp_B(e, this.inputState.b ? 1 : 0);
-    m._set_joyp_start(e, this.inputState.start ? 1 : 0);
+    /* Apply input state */
+    m._set_joyp_up(e,     this.inputState.up     ? 1 : 0);
+    m._set_joyp_down(e,   this.inputState.down   ? 1 : 0);
+    m._set_joyp_left(e,   this.inputState.left   ? 1 : 0);
+    m._set_joyp_right(e,  this.inputState.right  ? 1 : 0);
+    m._set_joyp_A(e,      this.inputState.a      ? 1 : 0);
+    m._set_joyp_B(e,      this.inputState.b      ? 1 : 0);
+    m._set_joyp_start(e,  this.inputState.start  ? 1 : 0);
     m._set_joyp_select(e, this.inputState.select ? 1 : 0);
 
-    // Run one video frame's worth of CPU ticks
+    /* Run one video frame's worth of CPU ticks */
     const targetTicks = m._emulator_get_ticks_f64(e) + TICKS_PER_FRAME;
+    let gotFrame = false;
     while (true) {
       const event = m._emulator_run_until_f64(e, targetTicks);
       if (event & EVENT_NEW_FRAME) {
-        // Always re-read the pointer in case WASM memory grew.
-        const ptr = m._get_frame_buffer_ptr(e);
+        /* Always re-read the pointer in case WASM memory grew */
+        const ptr  = m._get_frame_buffer_ptr(e);
         const size = m._get_frame_buffer_size(e);
-        if (size !== SCREEN_WIDTH * SCREEN_HEIGHT * 4) {
-          console.error('[GBCore] FRAMEBUFFER SIZE MISMATCH', size, SCREEN_WIDTH * SCREEN_HEIGHT * 4);
-        } else {
-          const frame = new Uint8ClampedArray(m.HEAP8.buffer, ptr, size);
-          this.imageData = new ImageData(new Uint8ClampedArray(frame), SCREEN_WIDTH, SCREEN_HEIGHT);
-        }
+
+        /* Copy WASM memory into our reusable buffer — avoids per-frame GC */
+        const src = new Uint8ClampedArray(m.HEAP8.buffer, ptr, size);
+        const copyLen = Math.min(src.length, this._frameBuffer.length);
+        this._frameBuffer.set(src.subarray(0, copyLen));
+        gotFrame = true;
       }
       if (event & EVENT_UNTIL_TICKS) {
         break;
       }
     }
 
-    if (this.imageData) {
+    if (gotFrame) {
       this.ctx.imageSmoothingEnabled = false;
-      this.ctx.putImageData(this.imageData, 0, 0);
+      /* render() handles any height mismatch via center-crop and uses the
+       * offscreen canvas to avoid putImageData instability on mobile Safari. */
+      render(this.ctx, this._frameBuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
     }
   }
 
@@ -156,10 +160,10 @@ export default class GBCore extends EmulatorCoreInterface {
     if (!this.module || !this.e) return null;
     const m = this.module;
     const fileDataPtr = m._state_file_data_new(this.e);
-    const ptr = m._get_file_data_ptr(fileDataPtr);
+    const ptr  = m._get_file_data_ptr(fileDataPtr);
     const size = m._get_file_data_size(fileDataPtr);
     m._emulator_write_state(this.e, fileDataPtr);
-    // Copy before deleting the file data struct
+    /* Copy before deleting the file data struct */
     const copy = new Uint8Array(new Uint8Array(m.HEAP8.buffer, ptr, size));
     m._file_data_delete(fileDataPtr);
     return uint8ToBase64(copy);
@@ -170,7 +174,7 @@ export default class GBCore extends EmulatorCoreInterface {
     const m = this.module;
     const bytes = base64ToUint8(state);
     const fileDataPtr = m._state_file_data_new(this.e);
-    const ptr = m._get_file_data_ptr(fileDataPtr);
+    const ptr  = m._get_file_data_ptr(fileDataPtr);
     const size = m._get_file_data_size(fileDataPtr);
     if (size === bytes.length) {
       const buffer = new Uint8Array(m.HEAP8.buffer, ptr, size);
@@ -194,8 +198,7 @@ export default class GBCore extends EmulatorCoreInterface {
       this.module._free(this.romDataPtr);
       this.romDataPtr = 0;
     }
-    this.module = null;
+    this.module    = null;
     this._romBytes = null;
-    this.imageData = null;
   }
 }
