@@ -1,31 +1,33 @@
 import { EmulatorCoreInterface, uint8ToBase64, base64ToUint8 } from './core-interface.js';
 import { loadScript } from './script-loader.js';
+import { render } from '../render/renderer.js';
+
+const SCREEN_WIDTH  = 256;
+const SCREEN_HEIGHT = 240;
 
 const BUTTON_MAP = {
-  up: 4,
-  down: 5,
-  left: 6,
-  right: 7,
-  a: 0,
-  b: 1,
+  up:     4,
+  down:   5,
+  left:   6,
+  right:  7,
+  a:      0,
+  b:      1,
   select: 2,
-  start: 3,
+  start:  3,
 };
 
 export default class NESCore extends EmulatorCoreInterface {
   constructor(canvas) {
     super(canvas);
-    this.canvas.width = 256;
-    this.canvas.height = 240;
-    console.log('[NESCore] canvas initialized', canvas.width, canvas.height);
+    /* Set logical canvas dimensions before start() applies DPR scaling */
+    this.canvas.width  = SCREEN_WIDTH;
+    this.canvas.height = SCREEN_HEIGHT;
+    console.log('[NESCore] canvas initialized', SCREEN_WIDTH, SCREEN_HEIGHT);
     this.nes = null;
-    // createImageData gives us a canvas-backed ImageData whose .data buffer we
-    // can write to directly.  Using `new ImageData(uint8Array, w, h)` would
-    // copy the array at construction time so later writes to the array would
-    // never reach the ImageData – producing a permanently black screen.
-    this.imageData = this.ctx.createImageData(256, 240);
-    this.frameBuffer = this.imageData.data;
-    this._frameCount = 0;
+
+    /* Reusable RGBA buffer filled by the JSNES onFrame callback */
+    this._frameBuffer = new Uint8ClampedArray(SCREEN_WIDTH * SCREEN_HEIGHT * 4);
+    this._frameCount  = 0;
   }
 
   onFrame(frameBuffer24) {
@@ -35,11 +37,11 @@ export default class NESCore extends EmulatorCoreInterface {
     }
     for (let i = 0; i < frameBuffer24.length; i += 1) {
       const pixel = frameBuffer24[i];
-      const idx = i * 4;
-      this.frameBuffer[idx] = (pixel >> 16) & 0xff;
-      this.frameBuffer[idx + 1] = (pixel >> 8) & 0xff;
-      this.frameBuffer[idx + 2] = pixel & 0xff;
-      this.frameBuffer[idx + 3] = 0xff;
+      const idx   = i * 4;
+      this._frameBuffer[idx]     = (pixel >> 16) & 0xff;
+      this._frameBuffer[idx + 1] = (pixel >> 8)  & 0xff;
+      this._frameBuffer[idx + 2] =  pixel         & 0xff;
+      this._frameBuffer[idx + 3] = 0xff;
     }
   }
 
@@ -60,35 +62,26 @@ export default class NESCore extends EmulatorCoreInterface {
     }
 
     this.nes = new JSNESLib.NES({
-      onFrame: this.onFrame.bind(this),
+      onFrame:       this.onFrame.bind(this),
       onAudioSample: () => {},
     });
     console.log('NES instance created');
   }
 
-  // Resolves the JSNES library namespace, normalizing the various ways CDNs
-  // may expose the library. Checks window.jsnes first (lowercase), then
-  // window.JSNES (uppercase). If the found value is already a namespace with a
-  // .NES constructor, it is returned as-is. If it is the NES constructor
-  // function itself (exported without a wrapping namespace), it is wrapped so
-  // that callers can always use JSNESLib.NES uniformly.
+  /* Resolves the JSNES library namespace, normalizing the various ways CDNs
+   * may expose the library. */
   _resolveJSNES() {
     const raw = window.jsnes || window.JSNES;
-
-    if (!raw) return null;
-    if (raw.NES) return raw;
+    if (!raw)          return null;
+    if (raw.NES)       return raw;
     if (typeof raw === 'function') return { NES: raw };
     return null;
   }
 
   async loadROM(romBuffer) {
     const bytes = romBuffer instanceof Uint8Array ? romBuffer : new Uint8Array(romBuffer);
-    // TextDecoder('latin1') routes through the Windows-1252 code page for bytes
-    // 0x80-0x9F, mapping them to different Unicode code points than their raw
-    // numeric values. JSNES recovers byte values via charCodeAt(), so those
-    // bytes would be silently corrupted. A direct String.fromCharCode loop
-    // always maps each byte to the Unicode code point with the same numeric
-    // value, which is what JSNES expects.
+    /* A direct String.fromCharCode loop avoids the Windows-1252 code-page
+     * corruption that TextDecoder('latin1') introduces for bytes 0x80-0x9F. */
     const chars = new Array(bytes.length);
     for (let i = 0; i < bytes.length; i++) {
       chars[i] = String.fromCharCode(bytes[i]);
@@ -103,7 +96,7 @@ export default class NESCore extends EmulatorCoreInterface {
   }
 
   getFrameBuffer() {
-    return this.frameBuffer;
+    return this._frameBuffer;
   }
 
   runFrame() {
@@ -117,11 +110,7 @@ export default class NESCore extends EmulatorCoreInterface {
 
     this.nes.frame();
 
-    if (!this.imageData) {
-      console.warn('[NESCore] imageData is null — skipping render');
-      return;
-    }
-    this.ctx.putImageData(this.imageData, 0, 0);
+    render(this.ctx, this._frameBuffer, SCREEN_WIDTH, SCREEN_HEIGHT);
   }
 
   serializeState() {
@@ -136,8 +125,7 @@ export default class NESCore extends EmulatorCoreInterface {
 
   destroy() {
     super.destroy();
-    this.nes = null;
-    this.imageData = null;
-    this.frameBuffer = null;
+    this.nes          = null;
+    this._frameBuffer = null;
   }
 }

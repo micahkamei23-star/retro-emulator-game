@@ -1,4 +1,5 @@
 import { EmulatorCoreInterface, uint8ToBase64, base64ToUint8 } from './core-interface.js';
+import { render } from '../render/renderer.js';
 
 const BUTTONS = ['a', 'b', 'select', 'start', 'right', 'left', 'up', 'down'];
 
@@ -11,9 +12,9 @@ export default class WasmCore extends EmulatorCoreInterface {
     this.memory = null;
     this.width = config.width;
     this.height = config.height;
-    this.canvas.width = this.width;
+    /* Set logical canvas dimensions before start() applies DPR scaling */
+    this.canvas.width  = this.width;
     this.canvas.height = this.height;
-    this.imageData = this.ctx.createImageData(this.width, this.height);
   }
 
   async init() {
@@ -62,15 +63,10 @@ export default class WasmCore extends EmulatorCoreInterface {
   }
 
   getFrameBuffer() {
-    if (!this.imageData) return null;
-    return this.imageData.data;
+    return null;
   }
 
   runFrame() {
-    // Enforce canvas at native resolution
-    if (this.canvas.width !== this.width) this.canvas.width = this.width;
-    if (this.canvas.height !== this.height) this.canvas.height = this.height;
-
     BUTTONS.forEach((button, index) => {
       if (this.exports.set_button) {
         this.exports.set_button(index, this.inputState[button] ? 1 : 0);
@@ -83,26 +79,23 @@ export default class WasmCore extends EmulatorCoreInterface {
 
     if (!this.exports.get_frame_ptr || !this.exports.get_frame_size) return;
 
-    const ptr = this.exports.get_frame_ptr();
+    const ptr  = this.exports.get_frame_ptr();
     const size = this.exports.get_frame_size();
     if (!ptr || !size) return;
 
-    const expected = this.width * this.height * 4;
+    /* View into WASM memory — no copy, no per-frame allocation.
+     * render() computes actual height from frame.length and center-crops;
+     * we do NOT check for exact size here so oversized buffers render correctly. */
     const frame = new Uint8ClampedArray(this.memory.buffer, ptr, size);
-    if (frame.length < expected) return;
-    const safeFrame = frame.length > expected
-      ? frame.subarray(0, expected)
-      : frame;
 
     this.ctx.imageSmoothingEnabled = false;
-    this.imageData.data.set(safeFrame);
-    this.ctx.putImageData(this.imageData, 0, 0);
+    render(this.ctx, frame, this.width, this.height);
   }
 
   serializeState() {
     if (!this.exports.save_state || !this.exports.get_state_size) return null;
 
-    const ptr = this.exports.save_state();
+    const ptr  = this.exports.save_state();
     const size = this.exports.get_state_size();
     if (!ptr || !size) return null;
 
@@ -124,9 +117,8 @@ export default class WasmCore extends EmulatorCoreInterface {
 
   destroy() {
     super.destroy();
-    this.module = null;
+    this.module  = null;
     this.exports = null;
-    this.memory = null;
-    this.imageData = null;
+    this.memory  = null;
   }
 }

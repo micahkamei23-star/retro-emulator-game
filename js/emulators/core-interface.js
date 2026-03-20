@@ -1,3 +1,18 @@
+import { setupCanvas } from '../render/renderer.js';
+
+/* ── iOS interaction gate ────────────────────────────────────────────────────
+ * iOS Safari requires a user gesture (touch or click) before certain browser
+ * APIs (AudioContext, canvas compositing) are usable.  We track the first
+ * gesture globally so start() can defer the RAF loop when needed.
+ */
+let _userHasInteracted = false;
+
+function _markInteraction() {
+  _userHasInteracted = true;
+}
+document.addEventListener('touchstart', _markInteraction, { once: true, passive: true });
+document.addEventListener('click',      _markInteraction, { once: true });
+
 export class EmulatorCoreInterface {
   /** Enable to log frame-level diagnostics to the console. */
   static DEBUG_FRAMES = false;
@@ -39,6 +54,16 @@ export class EmulatorCoreInterface {
     this.inputState = { ...nextState };
   }
 
+  /**
+   * Start the emulator render loop.
+   *
+   * Sets up the canvas for high-DPI rendering (devicePixelRatio) and creates
+   * the shared offscreen canvas used by renderer.render().  On iOS the loop is
+   * deferred until after the first user gesture so that the browser grants
+   * access to relevant APIs.
+   *
+   * @param {Function} [onFrame] - Optional callback invoked after every frame.
+   */
   start(onFrame) {
     if (this.isRunning) return;
 
@@ -46,27 +71,50 @@ export class EmulatorCoreInterface {
     this.isRunning = true;
     this._frameCounter = 0;
 
-    const loop = () => {
-      // Render safety: detect collapsed canvas
-      if (this.canvas.width < 1 || this.canvas.height < 1) {
-        console.warn('[RenderSafety] Canvas size is 0 — skipping frame');
-      } else {
-        this.runFrame();
-      }
+    /* Set up DPR-aware canvas using current logical dimensions.
+     * canvas.width/height at this point hold the logical (game) resolution
+     * set by the core's constructor. */
+    const { ctx } = setupCanvas(this.canvas, this.canvas.width, this.canvas.height);
+    this.ctx = ctx;
 
-      if (onFrame) onFrame();
-      this._frameCounter += 1;
+    const beginLoop = () => {
+      const loop = () => {
+        /* Render safety: detect collapsed canvas */
+        if (this.canvas.width < 1 || this.canvas.height < 1) {
+          console.warn('[RenderSafety] Canvas size is 0 — skipping frame');
+        } else {
+          this.runFrame();
+        }
 
-      if (EmulatorCoreInterface.DEBUG_FRAMES && this._frameCounter <= 5) {
-        console.log('[FrameDebug] frame', this._frameCounter);
-      }
+        if (onFrame) onFrame();
+        this._frameCounter += 1;
+
+        if (EmulatorCoreInterface.DEBUG_FRAMES && this._frameCounter <= 5) {
+          console.log('[FrameDebug] frame', this._frameCounter);
+        }
+
+        this.animationFrameId = requestAnimationFrame(loop);
+      };
 
       this.animationFrameId = requestAnimationFrame(loop);
+      console.log('Frame loop started');
+      console.log('Core started');
     };
 
-    this.animationFrameId = requestAnimationFrame(loop);
-    console.log('Frame loop started');
-    console.log('Core started');
+    if (_userHasInteracted) {
+      /* Desktop / already-interacted: start immediately */
+      beginLoop();
+    } else {
+      /* iOS fix: defer loop start until the first touch or click */
+      const startOnInteraction = () => {
+        document.removeEventListener('touchstart', startOnInteraction);
+        document.removeEventListener('click',      startOnInteraction);
+        if (this.isRunning) beginLoop();
+      };
+      document.addEventListener('touchstart', startOnInteraction, { once: true, passive: true });
+      document.addEventListener('click',      startOnInteraction, { once: true });
+      console.log('Core waiting for user interaction (iOS fix)');
+    }
   }
 
   stop() {

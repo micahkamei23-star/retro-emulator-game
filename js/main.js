@@ -22,6 +22,7 @@ import {
   startLoop,
   toggleFullscreen,
 } from './skin-engine.js';
+import { setupCanvas } from './render/renderer.js';
 
 /* ── System → canvas resolution ─────────────────────────────── */
 const SYSTEM_RESOLUTION = {
@@ -67,8 +68,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function setCanvasResolution(system) {
     const res = SYSTEM_RESOLUTION[system];
     if (!res) return;
-    if (canvas.width  !== res[0]) canvas.width  = res[0];
-    if (canvas.height !== res[1]) canvas.height = res[1];
+    /* Use setupCanvas so DPR scaling and the offscreen canvas are kept in sync.
+     * Directly setting canvas.width/height would reset the DPR transform that
+     * core.start() applied, resulting in a half-size or blurry display. */
+    setupCanvas(canvas, res[0], res[1]);
+    repositionCanvas();
   }
 
   function drawBootScreen() {
