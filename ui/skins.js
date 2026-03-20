@@ -4,7 +4,7 @@ export const skins = {
     "id":"gameboy",
     "type":"single",
     "aspectRatio":"10:9",
-    "overlay": "/skins/gameboy.svg",
+    "overlay": "./skins/gameboy.svg",
     "screen": { "x": 0.10, "y": 0.145, "w": 0.80, "h": 0.60 },
     "controls": {
       "A": { "x": 0.78, "y": 0.70, "w": 0.12 },
@@ -18,7 +18,7 @@ export const skins = {
     "id":"gba",
     "type":"single",
     "aspectRatio":"3:2",
-    "overlay": "/skins/gba.svg",
+    "overlay": "./skins/gba.svg",
     "screen": { "x": 0.10, "y": 0.18, "w": 0.80, "h": 0.52 },
     "controls": {
       "A": { "x": 0.82, "y": 0.70, "w": 0.12 },
@@ -32,7 +32,7 @@ export const skins = {
     "id":"ds",
     "type":"dual",
     "aspectRatio":"dual",
-    "overlay": "/skins/ds.svg",
+    "overlay": "./skins/ds.svg",
     "screens": [
       { "x":0.10, "y":0.08, "w":0.80, "h":0.30 },
       { "x":0.10, "y":0.48, "w":0.80, "h":0.30 }
@@ -48,7 +48,7 @@ export const skins = {
     "id":"psp",
     "type":"single",
     "aspectRatio":"16:9",
-    "overlay": "/skins/psp.svg",
+    "overlay": "./skins/psp.svg",
     "screen": { "x": 0.05, "y": 0.15, "w": 0.90, "h": 0.60 },
     "controls": {
       "A": { "x": 0.84, "y": 0.75, "w": 0.14 },
