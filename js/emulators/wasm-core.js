@@ -95,8 +95,8 @@ export default class WasmCore extends EmulatorCoreInterface {
       : frame;
 
     this.ctx.imageSmoothingEnabled = false;
-    const imageData = new ImageData(new Uint8ClampedArray(safeFrame), this.width, this.height);
-    this.ctx.putImageData(imageData, 0, 0);
+    this.imageData.data.set(safeFrame);
+    this.ctx.putImageData(this.imageData, 0, 0);
   }
 
   serializeState() {
