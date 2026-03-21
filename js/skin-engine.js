@@ -13,6 +13,23 @@
 /* ── Skin config ─────────────────────────────────────────────── */
 /* ALL values are normalized (0–1) relative to #device dimensions */
 export const skins = {
+  premium: {
+    image: './skins/premium.svg',
+    screen: {
+      left:   0.12,
+      top:    0.18,
+      width:  0.76,
+      height: 0.385,
+    },
+    hitboxes: {
+      A:      { x: 0.82, y: 0.70, size: 0.14 },
+      B:      { x: 0.72, y: 0.79, size: 0.13 },
+      START:  { x: 0.62, y: 0.92, size: 0.11 },
+      SELECT: { x: 0.38, y: 0.92, size: 0.11 },
+      DPAD:   { x: 0.20, y: 0.76, size: 0.22 },
+    },
+  },
+
   gameboy: {
     image: './skins/gameboy.svg',
     screen: {

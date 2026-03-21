@@ -1,9 +1,9 @@
 {
-  "name": "Retro Emulator Game",
-  "short_name": "RetroEmu",
+  "name": "Handheld Pro",
+  "short_name": "Handheld",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#0a0a12",
-  "theme_color": "#231942",
-  "description": "Retro console PWA with offline emulator shell and touch controls."
+  "background_color": "#0a0a0c",
+  "theme_color": "#0a0a0c",
+  "description": "Premium handheld emulator with offline support and touch controls."
 }

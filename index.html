@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#000000" />
-  <title>Retro Emulator</title>
+  <meta name="theme-color" content="#0a0a0c" />
+  <title>Handheld Pro</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
@@ -20,21 +20,18 @@
     </div>
   </div>
 
-  <!-- ── Utility bar: ROM upload + skin cycling + fullscreen ── -->
-  <!-- These are app-level controls, NOT emulator controls.     -->
-  <!-- No game buttons here — only transparent utility actions. -->
+  <!-- ── Utility bar: ghost controls, functional but visually invisible ── -->
   <div id="util-bar" aria-label="Emulator utilities">
-    <label for="rom-upload" class="util-action" title="Upload ROM file">ROM</label>
+    <label for="rom-upload" class="util-action" title="Load ROM">ROM</label>
     <input type="file" id="rom-upload"
            accept=".nes,.gb,.gbc,.gba,.sfc,.smc"
            hidden />
 
-    <button id="prev-skin"     class="util-action" type="button" title="Previous skin">&#9664;</button>
-    <button id="next-skin"     class="util-action" type="button" title="Next skin">&#9654;</button>
-    <button id="fullscreen-btn" class="util-action" type="button" title="Toggle fullscreen">&#x26F6;</button>
-
-    <button id="save-state-btn"  class="util-action" type="button" title="Save state">SAV</button>
-    <button id="load-state-btn"  class="util-action" type="button" title="Load state">LOD</button>
+    <button id="prev-skin"      class="util-action" type="button" title="Previous skin">&#9664;</button>
+    <button id="next-skin"      class="util-action" type="button" title="Next skin">&#9654;</button>
+    <button id="fullscreen-btn" class="util-action" type="button" title="Fullscreen">&#x26F6;</button>
+    <button id="save-state-btn" class="util-action" type="button" title="Save state">SAV</button>
+    <button id="load-state-btn" class="util-action" type="button" title="Load state">LOD</button>
 
     <span id="status-text" class="util-status" aria-live="polite"></span>
   </div>

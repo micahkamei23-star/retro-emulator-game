@@ -1,0 +1,225 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 480">
+  <defs>
+    <!-- Device body: deep space gray -->
+    <linearGradient id="p-body" x1="0.15" y1="0" x2="0.85" y2="1">
+      <stop offset="0%"   stop-color="#252529"/>
+      <stop offset="50%"  stop-color="#1a1a1e"/>
+      <stop offset="100%" stop-color="#111114"/>
+    </linearGradient>
+
+    <!-- Screen bezel: near-black -->
+    <linearGradient id="p-bezel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#0e0e12"/>
+      <stop offset="100%" stop-color="#08080a"/>
+    </linearGradient>
+
+    <!-- A button: deep indigo — single accent color -->
+    <linearGradient id="p-btna" x1="0.25" y1="0" x2="0.75" y2="1">
+      <stop offset="0%"   stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#2d1b9e"/>
+    </linearGradient>
+
+    <!-- B button: dark charcoal, recessed feel -->
+    <linearGradient id="p-btnb" x1="0.25" y1="0" x2="0.75" y2="1">
+      <stop offset="0%"   stop-color="#2c2c34"/>
+      <stop offset="100%" stop-color="#1c1c22"/>
+    </linearGradient>
+
+    <!-- D-pad surface -->
+    <linearGradient id="p-dpad" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0%"   stop-color="#272730"/>
+      <stop offset="100%" stop-color="#19191f"/>
+    </linearGradient>
+
+    <!-- Button drop shadow -->
+    <filter id="p-shadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3.5" flood-color="#000" flood-opacity="0.85"/>
+    </filter>
+
+    <!-- Inset shadow for screen recess -->
+    <filter id="p-inset-shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="1"/>
+    </filter>
+  </defs>
+
+  <!-- ══════════════════════════════════════════
+       DEVICE BODY
+  ══════════════════════════════════════════ -->
+  <rect x="1" y="1" width="268" height="478" rx="28" ry="28"
+        fill="url(#p-body)" stroke="#090909" stroke-width="1.5"/>
+
+  <!-- Top specular edge highlight (premium chamfer feel) -->
+  <path d="M30,2.5 Q135,1 240,2.5" stroke="#36363e" stroke-width="1.2" fill="none" opacity="0.6"/>
+
+  <!-- Left side edge -->
+  <path d="M2,30 L2,450" stroke="#222228" stroke-width="1" fill="none" opacity="0.4"/>
+  <!-- Right side edge -->
+  <path d="M268,30 L268,450" stroke="#222228" stroke-width="1" fill="none" opacity="0.4"/>
+
+
+  <!-- ══════════════════════════════════════════
+       SCREEN BEZEL
+  ══════════════════════════════════════════ -->
+  <!-- Outer shadow ring for bezel depth -->
+  <rect x="13" y="17" width="244" height="266" rx="15"
+        fill="#060608" stroke="#000" stroke-width="1.5"/>
+
+  <!-- Bezel face -->
+  <rect x="16" y="20" width="238" height="260" rx="12"
+        fill="url(#p-bezel)"/>
+
+  <!-- Brand text: minimal, above screen -->
+  <text x="135" y="56"
+        text-anchor="middle"
+        font-family="-apple-system, 'Helvetica Neue', sans-serif"
+        font-size="7.5"
+        fill="#28283a"
+        letter-spacing="5"
+        font-weight="600">RETRO</text>
+
+  <!-- Screen deep recess: multi-layer to simulate physical inset -->
+  <!-- Layer 1: outermost inset ring (darkest) -->
+  <rect x="26" y="72" width="218" height="204" rx="6"
+        fill="#020204"/>
+  <!-- Layer 2: inner border -->
+  <rect x="29" y="75" width="212" height="198" rx="5"
+        fill="#040406" stroke="#0d0d12" stroke-width="1"/>
+
+  <!-- Screen cutout: left=0.12, top=0.18, w=0.76, h=0.385
+       → x=32.4, y=86.4, w=205.2, h=184.8 -->
+  <rect x="32.4" y="86.4" width="205.2" height="184.8" rx="2" fill="#050507"/>
+
+  <!-- Screen inner highlight: very subtle top-left cathode ray effect -->
+  <rect x="33" y="87" width="120" height="1.5" rx="0.75"
+        fill="#16161e" opacity="0.7"/>
+  <rect x="33" y="87" width="1.5" height="100" rx="0.75"
+        fill="#16161e" opacity="0.5"/>
+
+  <!-- Power LED: top-right of bezel, subtle green -->
+  <circle cx="247" cy="42" r="2.8" fill="#15803d" opacity="0.85"/>
+  <circle cx="247" cy="42" r="1.5" fill="#4ade80" opacity="0.9"/>
+
+
+  <!-- ══════════════════════════════════════════
+       LOWER BODY DIVIDER
+  ══════════════════════════════════════════ -->
+  <line x1="16" y1="292" x2="254" y2="292"
+        stroke="#1c1c24" stroke-width="0.8" opacity="0.7"/>
+
+
+  <!-- ══════════════════════════════════════════
+       D-PAD  (hitbox center: x=0.20×270=54, y=0.76×480=364.8, size=0.22×270=59.4)
+  ══════════════════════════════════════════ -->
+  <!-- Recessed base shadow (offset 1px down) -->
+  <rect x="26"  y="355" width="56" height="20" rx="5" fill="#080810"/>
+  <rect x="44"  y="337" width="20" height="56" rx="5" fill="#080810"/>
+
+  <!-- D-pad arms -->
+  <rect x="27"  y="356" width="54" height="18" rx="4.5" fill="url(#p-dpad)" stroke="#10101a" stroke-width="0.5"/>
+  <rect x="45"  y="338" width="18" height="54" rx="4.5" fill="url(#p-dpad)" stroke="#10101a" stroke-width="0.5"/>
+
+  <!-- Center junction (slightly lighter) -->
+  <rect x="45" y="356" width="18" height="18" rx="2" fill="#222230"/>
+
+  <!-- Directional arrows: subtle, muted -->
+  <polygon points="54,342  50.5,348  57.5,348" fill="#383848" opacity="0.9"/>
+  <polygon points="54,388  50.5,382  57.5,382" fill="#383848" opacity="0.9"/>
+  <polygon points="30,365  36,361.5  36,368.5" fill="#383848" opacity="0.9"/>
+  <polygon points="78,365  72,361.5  72,368.5" fill="#383848" opacity="0.9"/>
+
+
+  <!-- ══════════════════════════════════════════
+       A BUTTON  (hitbox: x=0.82×270=221.4, y=0.70×480=336, size=0.14×270=37.8 → r≈19)
+  ══════════════════════════════════════════ -->
+  <!-- Physical offset shadow (makes button look raised off body) -->
+  <circle cx="221" cy="340" r="21" fill="#080810" filter="url(#p-shadow)"/>
+  <!-- Button body -->
+  <circle cx="221" cy="337" r="20" fill="url(#p-btna)"/>
+  <!-- Top-left sphere highlight -->
+  <ellipse cx="214" cy="329" rx="8.5" ry="6" fill="#fff" opacity="0.13"/>
+  <!-- Label -->
+  <text x="221" y="342"
+        text-anchor="middle"
+        font-family="-apple-system, 'Helvetica Neue', sans-serif"
+        font-size="15"
+        fill="#fff"
+        font-weight="700"
+        opacity="0.95">A</text>
+
+
+  <!-- ══════════════════════════════════════════
+       B BUTTON  (hitbox: x=0.72×270=194.4, y=0.79×480=379.2, size=0.13×270=35.1 → r≈17)
+  ══════════════════════════════════════════ -->
+  <!-- Shadow base -->
+  <circle cx="194" cy="383" r="19" fill="#08080e" filter="url(#p-shadow)"/>
+  <!-- Button body -->
+  <circle cx="194" cy="380" r="18" fill="url(#p-btnb)" stroke="#252530" stroke-width="0.5"/>
+  <!-- Top-left sphere highlight -->
+  <ellipse cx="188" cy="373" rx="7.5" ry="5" fill="#fff" opacity="0.07"/>
+  <!-- Label -->
+  <text x="194" y="385"
+        text-anchor="middle"
+        font-family="-apple-system, 'Helvetica Neue', sans-serif"
+        font-size="13"
+        fill="#52526a"
+        font-weight="700">B</text>
+
+
+  <!-- ══════════════════════════════════════════
+       SELECT  (hitbox: x=0.38×270=102.6, y=0.92×480=441.6, size=0.11)
+  ══════════════════════════════════════════ -->
+  <rect x="87" y="436" width="31" height="12" rx="6"
+        fill="#161620" stroke="#222230" stroke-width="0.8"/>
+  <text x="102.5" y="445"
+        text-anchor="middle"
+        font-family="-apple-system, 'Helvetica Neue', sans-serif"
+        font-size="5.5"
+        fill="#3e3e52"
+        letter-spacing="0.3"
+        font-weight="500">SELECT</text>
+
+
+  <!-- ══════════════════════════════════════════
+       START  (hitbox: x=0.62×270=167.4, y=0.92×480=441.6, size=0.11)
+  ══════════════════════════════════════════ -->
+  <rect x="152" y="436" width="31" height="12" rx="6"
+        fill="#161620" stroke="#222230" stroke-width="0.8"/>
+  <text x="167.5" y="445"
+        text-anchor="middle"
+        font-family="-apple-system, 'Helvetica Neue', sans-serif"
+        font-size="5.5"
+        fill="#3e3e52"
+        letter-spacing="0.3"
+        font-weight="500">START</text>
+
+
+  <!-- ══════════════════════════════════════════
+       SPEAKER GRILLE: dot matrix, right side
+  ══════════════════════════════════════════ -->
+  <circle cx="150" cy="350" r="1.7" fill="#1c1c28"/>
+  <circle cx="159" cy="350" r="1.7" fill="#1c1c28"/>
+  <circle cx="168" cy="350" r="1.7" fill="#1c1c28"/>
+  <circle cx="150" cy="360" r="1.7" fill="#1c1c28"/>
+  <circle cx="159" cy="360" r="1.7" fill="#1c1c28"/>
+  <circle cx="168" cy="360" r="1.7" fill="#1c1c28"/>
+  <circle cx="150" cy="370" r="1.7" fill="#1c1c28"/>
+  <circle cx="159" cy="370" r="1.7" fill="#1c1c28"/>
+  <circle cx="168" cy="370" r="1.7" fill="#1c1c28"/>
+  <circle cx="150" cy="380" r="1.7" fill="#1c1c28"/>
+  <circle cx="159" cy="380" r="1.7" fill="#1c1c28"/>
+  <circle cx="168" cy="380" r="1.7" fill="#1c1c28"/>
+  <circle cx="150" cy="390" r="1.7" fill="#1c1c28"/>
+  <circle cx="159" cy="390" r="1.7" fill="#1c1c28"/>
+  <circle cx="168" cy="390" r="1.7" fill="#1c1c28"/>
+
+
+  <!-- ══════════════════════════════════════════
+       BOTTOM ENGRAVING
+  ══════════════════════════════════════════ -->
+  <text x="135" y="471"
+        text-anchor="middle"
+        font-family="-apple-system, 'Helvetica Neue', sans-serif"
+        font-size="4.5"
+        fill="#1c1c26"
+        letter-spacing="2.5">HANDHELD PRO · 001</text>
+</svg>

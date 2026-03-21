@@ -1,5 +1,5 @@
 /* ================================================================
-   STRICT DEVICE-SKIN RENDERING SYSTEM
+   PREMIUM HANDHELD — Device-skin rendering system
    All controller buttons are VISUAL ONLY — baked into the skin image.
    HTML elements below are INVISIBLE SENSORS only.
    ================================================================ */
@@ -15,7 +15,7 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #000;
+  background: #0a0a0c;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
@@ -26,11 +26,11 @@ html, body {
 #emulator {
   position: fixed;
   inset: 0;
-  background: black;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Fullscreen API targets this element exclusively */
+  /* Subtle radial ambient: device sitting on a dark surface */
+  background: radial-gradient(ellipse 60% 70% at 50% 45%, #16161c 0%, #0a0a0c 100%);
 }
 
 /* ── Device container ─────────────────────────────────────────── */
@@ -39,6 +39,9 @@ html, body {
   width: 100%;
   max-width: 500px;
   aspect-ratio: 9 / 16;
+  /* Physical depth: device floating above the background */
+  filter: drop-shadow(0 28px 56px rgba(0, 0, 0, 0.92))
+          drop-shadow(0 6px 16px rgba(0, 0, 0, 0.75));
 }
 
 /* ── Device skin image: fills device, pointer-events OFF ──────── */
@@ -49,7 +52,6 @@ html, body {
   object-fit: contain;
   z-index: 1;
   pointer-events: none;
-  /* Ensure pixel-perfect SVG rendering */
   image-rendering: auto;
 }
 
@@ -57,10 +59,8 @@ html, body {
 #screen {
   position: absolute;
   z-index: 2;
-  /* Preserve pixel art sharpness */
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  /* No background — emulator draws to it directly */
 }
 
 /* ── Invisible hitbox layer: covers full device ──────────────── */
@@ -75,16 +75,14 @@ html, body {
   position: absolute;
   background: transparent;
   z-index: 4;
-  /* Touch behaviour */
   touch-action: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  /* Debug: set background to rgba(255,0,0,0.2) to visualise hitboxes */
 }
 
 /* ── Utility bar ─────────────────────────────────────────────── */
-/* App-level controls: ROM upload, skin switch, fullscreen.       */
-/* These are NOT emulator buttons — they use the minimal style.   */
+/* Ghost bar: invisible at rest, functional on interaction.       */
+/* This is NOT a UI panel — it has no visual presence.            */
 #util-bar {
   position: fixed;
   bottom: 0;
@@ -93,50 +91,47 @@ html, body {
   z-index: 100;
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 8px env(safe-area-inset-bottom, 0);
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  justify-content: center;
+  gap: 10px;
+  padding: 8px 16px env(safe-area-inset-bottom, 0);
+  background: transparent;
 }
 
+/* Ghost action labels: barely visible, purely functional */
 .util-action {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.7);
-  font-family: 'Courier New', monospace;
-  font-size: 10px;
-  padding: 3px 7px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.14);
+  font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  font-size: 9px;
+  padding: 4px 8px;
   border-radius: 4px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   user-select: none;
-  line-height: 1.4;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   white-space: nowrap;
-  /* Subtle active feedback only — no hover glow, no button appearance */
+  transition: color 0.15s ease;
 }
 
 .util-action:active {
-  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.5);
 }
 
+/* Status text: minimal, fades in after actions */
 .util-status {
-  flex: 1;
-  font-family: 'Courier New', monospace;
+  font-family: -apple-system, 'Helvetica Neue', sans-serif;
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.18);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
-  padding-left: 4px;
+  max-width: 140px;
 }
 
 /* ── Fullscreen mode ─────────────────────────────────────────── */
-/* Only #emulator enters fullscreen — canvas is NOT recreated.   */
 #emulator:fullscreen {
   background: #000;
 }
@@ -145,7 +140,6 @@ html, body {
   background: #000;
 }
 
-/* Hide util-bar in fullscreen (user taps device to bring it back) */
 #emulator:fullscreen ~ #util-bar,
 #emulator:-webkit-full-screen ~ #util-bar {
   display: none;
@@ -154,7 +148,7 @@ html, body {
 /* ── Landscape: shrink device to fit viewport height ─────────── */
 @media (orientation: landscape) {
   #device {
-    max-width: calc(56.25vh); /* 9/16 of viewport height */
+    max-width: calc(56.25vh);
   }
 }
 
