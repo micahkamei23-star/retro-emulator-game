@@ -24,6 +24,8 @@ export const skins = {
     hitboxes: {
       A:      { x: 0.82, y: 0.70, size: 0.14 },
       B:      { x: 0.72, y: 0.79, size: 0.13 },
+      L:      { x: 0.08, y: 0.08, size: 0.14 },
+      R:      { x: 0.92, y: 0.08, size: 0.14 },
       START:  { x: 0.62, y: 0.92, size: 0.11 },
       SELECT: { x: 0.38, y: 0.92, size: 0.11 },
       DPAD:   { x: 0.20, y: 0.76, size: 0.22 },
