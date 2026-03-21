@@ -35,11 +35,11 @@ const SYSTEM_RESOLUTION = {
 
 /* ── System → preferred skin ────────────────────────────────── */
 const SYSTEM_SKIN = {
-  nes:  'gameboy',
-  gb:   'gameboy',
-  gbc:  'gameboy',
-  gba:  'gba',
-  snes: 'psp',
+  nes:  'premium',
+  gb:   'premium',
+  gbc:  'premium',
+  gba:  'premium',
+  snes: 'premium',
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -76,20 +76,41 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function drawBootScreen() {
-    /* Draw a minimal boot screen on the canvas */
+    /* Minimal boot screen — dark display, centered title + action */
     canvas.width  = 160;
     canvas.height = 144;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    ctx.fillStyle = '#090909';
+
+    /* Deep black — screen off look */
+    ctx.fillStyle = '#050507';
     ctx.fillRect(0, 0, 160, 144);
-    ctx.fillStyle = '#00f5d4';
-    ctx.font = '10px monospace';
-    ctx.fillText('RETRO EMULATOR', 8, 30);
-    ctx.fillStyle = '#f15bb5';
+
+    /* Subtle title: small, dim, centered */
+    ctx.fillStyle = '#2a2a3a';
+    ctx.font = 'bold 8px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('RETRO EMU', 80, 58);
+
+    /* Divider */
+    ctx.strokeStyle = '#18182a';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(52, 68);
+    ctx.lineTo(108, 68);
+    ctx.stroke();
+
+    /* Call to action: slightly brighter */
+    ctx.fillStyle = '#48486a';
     ctx.font = '7px monospace';
-    ctx.fillText('Upload a ROM to start', 8, 50);
+    ctx.fillText('Load ROM', 80, 82);
   }
+
+  /* Tap the screen to load a ROM when nothing is running */
+  canvas.style.cursor = 'pointer';
+  canvas.addEventListener('click', () => {
+    if (!activeCore) romUpload.click();
+  });
 
   /* ── ROM lifecycle ────────────────────────────────────────── */
   async function startRom(rom, romBuffer = null) {
