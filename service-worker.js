@@ -1,4 +1,4 @@
-const SW_VERSION = 'v12';
+const SW_VERSION = 'v13';
 const CACHE_PREFIX = 'retro-emulator-cache';
 const CACHE_NAME = `${CACHE_PREFIX}-${SW_VERSION}`;
 

@@ -1,25 +1,25 @@
 const CORE_CONFIG = {
   nes: {
-    wasmUrl: '/cores/fceumm/nes.wasm',
+    wasmUrl: './cores/fceumm/nes.wasm',
     width: 256,
     height: 240,
     aspect: '4 / 3',
   },
   gba: {
-    wasmUrl: '/cores/mgba/mgba.wasm',
+    wasmUrl: './cores/mgba/mgba.wasm',
     width: 240,
     height: 160,
     aspect: '3 / 2',
   },
   snes: {
-    wasmUrl: '/cores/snes9x/snes9x.wasm',
+    wasmUrl: './cores/snes9x/snes9x.wasm',
     width: 256,
     height: 224,
     aspect: '8 / 7',
   },
   gb: {
     // If you have a dedicated GB core, point this at it instead.
-    wasmUrl: '/cores/mgba/mgba.wasm',
+    wasmUrl: './cores/mgba/mgba.wasm',
     width: 160,
     height: 144,
     aspect: '10 / 9',

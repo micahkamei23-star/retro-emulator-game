@@ -14,7 +14,7 @@
 /* ALL values are normalized (0–1) relative to #device dimensions */
 export const skins = {
   gameboy: {
-    image: '/skins/gameboy.svg',
+    image: './skins/gameboy.svg',
     screen: {
       left:   0.12,
       top:    0.18,
@@ -31,7 +31,7 @@ export const skins = {
   },
 
   gba: {
-    image: '/skins/gba.svg',
+    image: './skins/gba.svg',
     screen: {
       left:   0.10,
       top:    0.20,
@@ -50,7 +50,7 @@ export const skins = {
   },
 
   psp: {
-    image: '/skins/psp.svg',
+    image: './skins/psp.svg',
     screen: {
       left:   0.08,
       top:    0.12,
