@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.fillStyle = '#2a2a3a';
     ctx.font = 'bold 8px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('RETRO EMU', 80, 58);
+    ctx.fillText('Handheld Pro', 80, 58);
 
     /* Divider */
     ctx.strokeStyle = '#18182a';
@@ -108,7 +108,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* Tap the screen to load a ROM when nothing is running */
   canvas.style.cursor = 'pointer';
-  canvas.addEventListener('click', () => {
+  const device = document.getElementById('device');
+  device.addEventListener('click', () => {
     if (!activeCore) romUpload.click();
   });
 
